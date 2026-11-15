@@ -32,3 +32,32 @@ The original SQLite prototype has 12 related tables. The Supabase PostgreSQL sch
 ## Presentation notes
 
 See [`PRESENTATION.md`](PRESENTATION.md) for a short walkthrough and [`DESIGN.md`](DESIGN.md) for the screen and database rationale.
+
+
+## Employee access bootstrap
+
+The first system administrator must be provisioned manually by an authorised project owner:
+
+1. In the Supabase Dashboard for the DBS project, disable public user sign-ups in the Auth settings. Keep invitations enabled.
+2. Verify the first administrator's employment and authority through an independent university channel.
+3. Use Supabase Auth's dashboard invitation flow to invite that exact work email.
+4. After the Auth user exists, run this SQL in the Supabase SQL Editor, replacing the email and name with the verified administrator's details:
+
+```sql
+insert into public.employee_profiles (user_id, email, full_name, role, is_active)
+select id, email, 'Verified System Administrator', 'system_admin', true
+from auth.users
+where lower(email) = lower('verified.admin@nust.ac.zw')
+on conflict (user_id) do update
+set role = excluded.role,
+    is_active = true,
+    email = excluded.email,
+    full_name = excluded.full_name;
+```
+
+5. Set `SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` in the hosting provider's secret environment settings. The service-role key is server-only.
+6. The administrator can then sign in and use the Employee access page to invite individually verified staff.
+
+The application checks the employee profile on each protected request. Setting `is_active = false` blocks further application access on the next request. This does not replace revoking sessions in Supabase Auth when immediate token invalidation is required.
+
+**Important current limitation:** the web application's business data layer still uses local SQLite. The Supabase PostgreSQL schema exists, but the Flask queries, payment transactions and demo seed process have not yet been migrated. This app is not ready for real records or operational use.
