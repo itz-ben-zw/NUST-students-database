@@ -239,3 +239,12 @@ def invite_employee(email: str, full_name: str, role: str, invited_by: str) -> N
             "The invitation was sent, but the employee profile could not be created. "
             "Do not resend it; inspect the employee_profiles table and Supabase Auth user."
         )
+    audit = requests.post(
+        f"{SUPABASE_URL}/rest/v1/audit_logs",
+        headers={**headers, "Prefer": "return=minimal"},
+        json={"actor_user_id": invited_by, "action": "employee.invited",
+              "entity_type": "employee_profile", "entity_id": user_id,
+              "details": {"email": email, "role": role}},
+        timeout=12,
+    )
+    audit.raise_for_status()
