@@ -249,3 +249,33 @@ body{font-family:var(--font);font-size:14px;letter-spacing:0}
  .quick-stats article strong{font-size:17px}
  .mobile-nav a{font-size:9px;padding:7px 3px}
 }
+
+
+/* Campus image hero: authentic setting, readable copy, no institutional endorsement implied. */
+.preview-hero{
+  position:relative;
+  isolation:isolate;
+  min-height:310px;
+  margin:0 0 18px;
+  padding:clamp(28px,5vw,54px);
+  align-items:center;
+  overflow:hidden;
+  border:1px solid #244967;
+  border-radius:8px;
+  background-color:#102b4b;
+  background-image:
+    linear-gradient(90deg,rgba(8,29,52,.94) 0%,rgba(8,29,52,.78) 48%,rgba(8,29,52,.28) 100%),
+    linear-gradient(0deg,rgba(8,29,52,.22),rgba(8,29,52,.08)),
+    url("https://alumni.nust.ac.zw/img/nust-campus-hero.jpg");
+  background-size:cover;
+  background-position:center 48%;
+}
+.preview-hero>div{position:relative;z-index:1;max-width:650px}
+.preview-hero .preview-context{margin:0 0 12px;color:#d0e5f3;font-size:11px;font-weight:700;letter-spacing:.08em}
+.preview-hero h1{margin:0 0 12px;color:#fff;font-size:clamp(36px,5vw,56px);font-weight:750;letter-spacing:-.045em;line-height:1.04}
+.preview-hero p:not(.preview-context){max-width:560px;color:#edf4fa;font-size:15px;line-height:1.65}
+@media(max-width:760px){
+  .preview-hero{min-height:270px;padding:26px 22px;background-position:58% center}
+  .preview-hero h1{font-size:39px}
+  .preview-hero p:not(.preview-context){font-size:13px;max-width:36ch}
+}
