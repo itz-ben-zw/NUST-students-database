@@ -30,6 +30,16 @@ app.config.update(
 )
 csrf = CSRFProtect(app)
 
+@app.get("/healthz")
+def healthz():
+    try:
+        get_db().execute("SELECT 1").fetchone()
+        return {"status": "ok"}, 200
+    except Exception:
+        app.logger.exception("Database health check failed.")
+        return {"status": "unavailable"}, 503
+
+
 @app.context_processor
 def inject_employee():
     return {"current_employee": current_employee()}
