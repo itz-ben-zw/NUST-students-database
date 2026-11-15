@@ -173,6 +173,24 @@ def decorate_invoices(rows):
     return [dict(row) | {"balance": max(0, row["billed"] - row["paid"])} for row in rows]
 
 
+def summarize_financials(rows):
+    """Aggregate invoice totals independently for each currency."""
+    totals_by_currency = {}
+    for row in rows:
+        currency = row["currency"]
+        totals = totals_by_currency.setdefault(
+            currency, {"currency": currency, "billed": 0, "paid": 0, "balance": 0}
+        )
+        totals["billed"] += row["billed"]
+        totals["paid"] += row["paid"]
+        totals["balance"] += row["balance"]
+    for totals in totals_by_currency.values():
+        totals["rate"] = round(totals["paid"] / totals["billed"] * 100) if totals["billed"] else 0
+    return list(totals_by_currency.values())
+
+
+
+
 @app.route("/")
 def dashboard():
     employee = current_employee()
@@ -181,15 +199,7 @@ def dashboard():
     if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor"}:
         abort(403)
     invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
-    currency_totals = {}
-    for row in invoices:
-        currency = row["currency"]
-        totals = currency_totals.setdefault(currency, {"currency": currency, "billed": 0, "paid": 0, "balance": 0})
-        totals["billed"] += row["billed"]
-        totals["paid"] += row["paid"]
-        totals["balance"] += row["balance"]
-    for totals in currency_totals.values():
-        totals["rate"] = round(totals["paid"] / totals["billed"] * 100) if totals["billed"] else 0
+    currency_totals = summarize_financials(invoices)
     db = get_db()
     recent = db.execute("""
       SELECT p.*, s.first_name, s.last_name, s.student_no
