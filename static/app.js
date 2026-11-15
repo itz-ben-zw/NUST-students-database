@@ -21,7 +21,7 @@ if (studentSelect && currencySelect && amountInput) {
     element.dataset.counted = "true";
 
     const original = element.textContent.trim();
-    const match = original.match(/-?[\\d,]+(?:\\.\\d+)?/);
+    const match = original.match(/-?[\d,]+(?:\.\d+)?/);
     if (!match) return;
 
     const rawNumber = match[0];
