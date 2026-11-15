@@ -6,12 +6,60 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from flask import Flask, abort, flash, g, redirect, render_template, request, url_for
+import requests
+
+from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
+from flask_wtf.csrf import CSRFProtect
+
+from security import AuthenticationUnavailable, current_employee, login_required, roles_required, sign_in_with_password
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("NUST_FEES_DB", BASE_DIR / "nust_students.db"))
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
+app.secret_key = os.environ.get("SECRET_KEY")
+if not app.secret_key and os.environ.get("FLASK_ENV") == "production":
+    raise RuntimeError("SECRET_KEY must be set in production.")
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=os.environ.get("FLASK_ENV") == "production",
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=__import__("datetime").timedelta(minutes=30),
+)
+csrf = CSRFProtect(app)
+
+@app.context_processor
+def inject_employee():
+    return {"current_employee": current_employee()}
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_employee():
+        return redirect(url_for("dashboard"))
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        try:
+            result = sign_in_with_password(email, password)
+            session.clear()
+            session.permanent = True
+            session["supabase_access_token"] = result["token"]
+            target = request.args.get("next", "")
+            if not target.startswith("/") or target.startswith("//"):
+                target = url_for("dashboard")
+            return redirect(target)
+        except ValueError as exc:
+            flash(str(exc), "error")
+        except (AuthenticationUnavailable, requests.RequestException) as exc:
+            app.logger.warning("Employee sign-in unavailable: %s", exc)
+            flash("Sign-in is temporarily unavailable. Please try again later.", "error")
+    return render_template("login.html")
+
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    session.clear()
+    flash("You have been signed out.", "success")
+    return redirect(url_for("login"))
 
 
 def connect_db():
@@ -217,6 +265,7 @@ def decorate_invoices(rows):
 
 
 @app.route("/")
+@roles_required("system_admin", "finance", "student_records", "auditor")
 def dashboard():
     invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
     total_billed = sum(row["billed"] for row in invoices)
@@ -244,6 +293,7 @@ def dashboard():
 
 
 @app.route("/students")
+@roles_required("system_admin", "student_records", "auditor")
 def students():
     q = request.args.get("q", "").strip()
     sql = """
@@ -262,6 +312,7 @@ def students():
 
 
 @app.route("/invoices")
+@roles_required("system_admin", "finance", "auditor")
 def invoices_page():
     invoices = decorate_invoices(invoice_rows())
     return render_template("invoices.html", invoices=invoices,
@@ -269,6 +320,7 @@ def invoices_page():
 
 
 @app.route("/payments", methods=["GET", "POST"])
+@roles_required("system_admin", "finance")
 def payments():
     db = get_db()
     if request.method == "POST":
@@ -332,6 +384,7 @@ def payments():
 
 
 @app.route("/reports")
+@roles_required("system_admin", "finance", "auditor")
 def reports():
     rows = decorate_invoices(invoice_rows())
     totals = {}
@@ -351,6 +404,7 @@ def reports():
 
 
 @app.route("/receipt/<receipt_no>")
+@roles_required("system_admin", "finance", "auditor")
 def receipt_page(receipt_no):
     row = get_db().execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no,pr.name AS programme_name,f.name AS faculty_name
