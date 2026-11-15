@@ -59,7 +59,7 @@ def test_login_post_without_csrf_token_is_rejected():
 def test_public_preview_is_available_without_database_or_login():
     response = web_app.app.test_client().get("/preview")
     assert response.status_code == 200
-    assert b"PUBLIC PREVIEW" in response.data
+    assert b"ACCOUNT OVERVIEW" in response.data
     assert b"fictional" in response.data.lower()
 
 
