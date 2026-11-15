@@ -156,7 +156,7 @@ app.jinja_env.filters["money"] = money
 def invoice_rows(where="", params=()):
     return get_db().execute(f"""
       SELECT i.id, i.invoice_no, i.issued_on, i.due_on, i.status,
-             s.student_no, s.first_name, s.last_name, s.status AS student_status,
+             s.id AS student_id, s.student_no, s.first_name, s.last_name, s.status AS student_status,
              p.name AS programme_name, f.name AS faculty_name,
              a.academic_year, a.semester_number,
              COALESCE((SELECT SUM(amount_cents) FROM invoice_lines il WHERE il.invoice_id=i.id),0) AS billed,
@@ -206,7 +206,7 @@ def dashboard():
 
 
 @app.route("/students")
-@roles_required("system_admin", "student_records", "auditor")
+@roles_required("system_admin", "finance", "student_records", "auditor")
 def students():
     q = request.args.get("q", "").strip()
     sql = """
@@ -320,7 +320,7 @@ def payments():
     selected = request.args.get("receipt")
     receipt = next((row for row in recent if row["receipt_no"] == selected), None)
     return render_template("payments.html", students=rows, payments=recent, receipt=receipt,
-                           today=date.today().isoformat())
+                           today=date.today().isoformat(), selected_student_id=request.args.get("student_id", type=int))
 
 
 @app.route("/reports")
