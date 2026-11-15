@@ -97,7 +97,10 @@ def employee_admin():
 def connect_db():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL must point to the Supabase PostgreSQL database.")
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row, prepare_threshold=None)
+    if "sslmode=" not in DATABASE_URL:
+        raise RuntimeError("DATABASE_URL must specify sslmode=require or a stronger SSL mode.")
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row,
+                           prepare_threshold=None, connect_timeout=10)
 
 
 def get_db():
