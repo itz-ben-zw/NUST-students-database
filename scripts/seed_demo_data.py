@@ -158,7 +158,7 @@ def main() -> int:
             # A few illustrative receipts: partial, full, and mixed payment methods.
             demo_payments = [
                 (1, "DEMO-RCP-2026-0001", date(2026, 10, 15), 25000, "EcoCash"),
-                (2, "DEMO-RCP-2026-0002", date(2026, 10, 22), 125000, "Bank transfer"),
+                (2, "DEMO-RCP-2026-0002", date(2026, 10, 22), 108000, "Bank transfer"),
                 (3, "DEMO-RCP-2026-0003", date(2026, 11, 2), 40000, "RTGS"),
                 (5, "DEMO-RCP-2026-0004", date(2026, 11, 8), 20000, "EcoCash"),
             ]
