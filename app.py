@@ -285,8 +285,13 @@ def invoices_page():
         where = "WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s"
         params = (f"%{q}%",) * 3
     invoices = decorate_invoices(invoice_rows(where, params))
+    outstanding_by_currency = {}
+    for row in invoices:
+        outstanding_by_currency[row["currency"]] = (
+            outstanding_by_currency.get(row["currency"], 0) + row["balance"]
+        )
     return render_template("invoices.html", invoices=invoices, q=q,
-                           outstanding=sum(row["balance"] for row in invoices))
+                           outstanding_by_currency=outstanding_by_currency)
 
 
 @app.route("/payments", methods=["GET", "POST"])
