@@ -11,7 +11,8 @@ import requests
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 from flask_wtf.csrf import CSRFProtect
 
-from security import AuthenticationUnavailable, current_employee, login_required, roles_required, sign_in_with_password
+from security import (AuthenticationUnavailable, current_employee, invite_employee,
+                      list_employee_profiles, login_required, roles_required, sign_in_with_password)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("NUST_FEES_DB", BASE_DIR / "nust_students.db"))
@@ -60,6 +61,31 @@ def logout():
     session.clear()
     flash("You have been signed out.", "success")
     return redirect(url_for("login"))
+
+@app.route("/admin/employees", methods=["GET", "POST"])
+@roles_required("system_admin")
+def employee_admin():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        full_name = request.form.get("full_name", "").strip()
+        role = request.form.get("role", "").strip()
+        actor = current_employee()
+        try:
+            invite_employee(email, full_name, role, actor["user_id"])
+            flash(f"Invitation sent to {email}. Access activates after the employee accepts and signs in.", "success")
+            return redirect(url_for("employee_admin"))
+        except ValueError as exc:
+            flash(str(exc), "error")
+        except (AuthenticationUnavailable, requests.RequestException) as exc:
+            app.logger.error("Employee invitation failed: %s", exc)
+            flash("Could not complete the invitation. Check Supabase Auth and employee_profiles before retrying.", "error")
+    try:
+        employees = list_employee_profiles()
+    except (AuthenticationUnavailable, requests.RequestException) as exc:
+        app.logger.error("Could not load employee list: %s", exc)
+        employees = []
+        flash("Employee directory is temporarily unavailable.", "error")
+    return render_template("employees.html", employees=employees)
 
 
 def connect_db():
