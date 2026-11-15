@@ -274,7 +274,7 @@ def payments():
                 db.rollback()
                 flash("Payment is higher than this invoice’s remaining balance.", "error")
                 return redirect(url_for("payments"))
-            receipt_no = f"NUST-RCP-DEMO-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+            receipt_no = f"NUST-RCP-SAMPLE-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
             actor = current_employee()
             recorded_by = actor.get("full_name") or actor["email"]
             cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference,recorded_by) VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
@@ -296,7 +296,7 @@ def payments():
             db.rollback()
             flash("Could not save the payment. Please try again.", "error")
             return redirect(url_for("payments"))
-        flash(f"Demo payment recorded. Receipt {receipt_no} is ready.", "success")
+        flash(f"Payment recorded. Receipt {receipt_no} is ready.", "success")
         return redirect(url_for("payments", receipt=receipt_no))
     rows = db.execute("""
       SELECT s.id,s.student_no,s.first_name,s.last_name,p.name AS programme_name,
