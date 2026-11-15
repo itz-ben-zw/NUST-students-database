@@ -11,8 +11,9 @@ import requests
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 from flask_wtf.csrf import CSRFProtect
 
-from security import (AuthenticationUnavailable, current_employee, invite_employee,
-                      list_employee_profiles, login_required, roles_required, sign_in_with_password)
+from security import (AuthenticationUnavailable, create_web_session, current_employee,
+                      delete_web_session, invite_employee, list_employee_profiles,
+                      login_required, roles_required, sign_in_with_password)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("NUST_FEES_DB", BASE_DIR / "nust_students.db"))
@@ -43,7 +44,7 @@ def login():
             result = sign_in_with_password(email, password)
             session.clear()
             session.permanent = True
-            session["supabase_access_token"] = result["token"]
+            session["web_session_id"] = create_web_session(result["token"], result["profile"]["user_id"])
             target = request.args.get("next", "")
             if not target.startswith("/") or target.startswith("//"):
                 target = url_for("dashboard")
@@ -58,6 +59,10 @@ def login():
 @app.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    try:
+        delete_web_session(session.get("web_session_id"))
+    except requests.RequestException:
+        app.logger.warning("Could not remove server-side employee session during sign-out.")
     session.clear()
     flash("You have been signed out.", "success")
     return redirect(url_for("login"))
