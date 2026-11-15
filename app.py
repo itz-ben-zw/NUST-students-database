@@ -158,14 +158,23 @@ def invoice_rows(where="", params=()):
       SELECT i.id, i.invoice_no, i.issued_on, i.due_on, i.status,
              s.id AS student_id, s.student_no, s.first_name, s.last_name, s.status AS student_status,
              p.name AS programme_name, f.name AS faculty_name,
-             a.academic_year, a.semester_number,
-             COALESCE((SELECT SUM(amount_cents) FROM invoice_lines il WHERE il.invoice_id=i.id),0) AS billed,
-             COALESCE((SELECT SUM(pa.amount_cents) FROM payment_allocations pa WHERE pa.invoice_id=i.id),0) AS paid,
-             COALESCE((SELECT currency FROM invoice_lines il WHERE il.invoice_id=i.id LIMIT 1),'USD') AS currency
+             a.academic_year, a.semester_number, il.currency,
+             SUM(il.amount_cents) AS billed,
+             COALESCE((
+               SELECT SUM(pa.amount_cents)
+               FROM payment_allocations pa
+               JOIN payments pay ON pay.id=pa.payment_id
+               WHERE pa.invoice_id=i.id AND pay.currency=il.currency
+             ),0) AS paid
       FROM invoices i JOIN students s ON s.id=i.student_id
       JOIN programmes p ON p.id=s.programme_id JOIN faculties f ON f.id=p.faculty_id
       JOIN academic_semesters a ON a.id=i.semester_id
-      {where} ORDER BY s.last_name, s.first_name
+      JOIN invoice_lines il ON il.invoice_id=i.id
+      {where}
+      GROUP BY i.id, i.invoice_no, i.issued_on, i.due_on, i.status,
+               s.id, s.student_no, s.first_name, s.last_name, s.status,
+               p.name, f.name, a.academic_year, a.semester_number, il.currency
+      ORDER BY s.last_name, s.first_name, i.due_on, il.currency
     """, params).fetchall()
 
 
@@ -253,15 +262,17 @@ def students():
         params = (f"%{q}%",) * 5
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
     account_invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
-    balances = {row["student_no"]: row["balance"] for row in account_invoices}
+    balance_parts = {}
     account_states = {}
     for row in account_invoices:
-        if row["balance"] <= 0:
-            account_states[row["student_no"]] = "Paid"
-        elif row["paid"] > 0:
-            account_states[row["student_no"]] = "Partial"
+        balance_parts.setdefault(row["student_no"], []).append(money(row["balance"], row["currency"]))
+        if row["balance"] > 0:
+            account_states[row["student_no"]] = (
+                "Partial" if row["paid"] > 0 else account_states.get(row["student_no"], "Owing")
+            )
         else:
-            account_states[row["student_no"]] = "Owing"
+            account_states.setdefault(row["student_no"], "Paid")
+    balances = {student_no: " · ".join(parts) for student_no, parts in balance_parts.items()}
     return render_template("students.html", students=rows, balances=balances, account_states=account_states, q=q)
 
 
@@ -336,8 +347,23 @@ def payments():
                     (payment_id, invoice_id, allocated_cents),
                 )
                 invoice_row = next(row for row in eligible if row["id"] == invoice_id)
-                if allocated_cents == invoice_row["balance"]:
-                    db.execute("UPDATE invoices SET status='Paid' WHERE id=%s", (invoice_id,))
+                db.execute(
+                    """UPDATE invoices AS inv
+                       SET status=CASE WHEN EXISTS (
+                         SELECT 1
+                         FROM invoice_lines il
+                         WHERE il.invoice_id=inv.id
+                         GROUP BY il.currency
+                         HAVING SUM(il.amount_cents) > COALESCE((
+                           SELECT SUM(pa.amount_cents)
+                           FROM payment_allocations pa
+                           JOIN payments pay ON pay.id=pa.payment_id
+                           WHERE pa.invoice_id=inv.id AND pay.currency=il.currency
+                         ),0)
+                       ) THEN 'Open' ELSE 'Paid' END
+                       WHERE inv.id=%s""",
+                    (invoice_id,),
+                )
             db.execute(
                 "INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,details) VALUES(%s,%s,%s,%s,%s::jsonb)",
                 (actor["user_id"], "payment.recorded", "payment", str(payment_id),
@@ -359,6 +385,7 @@ def payments():
           SELECT SUM(pa.amount_cents)
           FROM invoices pi
           JOIN payment_allocations pa ON pa.invoice_id=pi.id
+          JOIN payments pay ON pay.id=pa.payment_id AND pay.currency=il.currency
           WHERE pi.student_id=s.id AND pi.status!='Void'
             AND EXISTS (
               SELECT 1 FROM invoice_lines pil
@@ -375,6 +402,7 @@ def payments():
           SELECT SUM(pa.amount_cents)
           FROM invoices pi
           JOIN payment_allocations pa ON pa.invoice_id=pi.id
+          JOIN payments pay ON pay.id=pa.payment_id AND pay.currency=il.currency
           WHERE pi.student_id=s.id AND pi.status!='Void'
             AND EXISTS (
               SELECT 1 FROM invoice_lines pil
