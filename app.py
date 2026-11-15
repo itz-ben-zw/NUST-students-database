@@ -44,6 +44,12 @@ def healthz():
 def inject_employee():
     return {"current_employee": current_employee()}
 
+@app.get("/preview")
+def public_preview():
+    """Public, read-only showcase populated only with fictional static examples."""
+    return render_template("preview.html")
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_employee():
