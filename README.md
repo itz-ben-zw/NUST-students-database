@@ -1,4 +1,4 @@
-# NUST Student Accounts Demo
+# NUST Student Accounts Demo by Group 5 Informatic
 
 A one-day academic database project: a small Flask and SQLite app for exploring student records, programmes, semester invoices, payments, balances, and printable receipts. It is designed to be easy to present and demonstrates a practical university accounts workflow in Zimbabwe.
 
