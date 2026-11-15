@@ -181,9 +181,15 @@ def dashboard():
     if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor"}:
         abort(403)
     invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
-    total_billed = sum(row["billed"] for row in invoices)
-    total_collected = sum(row["paid"] for row in invoices)
-    total_due = sum(row["balance"] for row in invoices)
+    currency_totals = {}
+    for row in invoices:
+        currency = row["currency"]
+        totals = currency_totals.setdefault(currency, {"currency": currency, "billed": 0, "paid": 0, "balance": 0})
+        totals["billed"] += row["billed"]
+        totals["paid"] += row["paid"]
+        totals["balance"] += row["balance"]
+    for totals in currency_totals.values():
+        totals["rate"] = round(totals["paid"] / totals["billed"] * 100) if totals["billed"] else 0
     db = get_db()
     recent = db.execute("""
       SELECT p.*, s.first_name, s.last_name, s.student_no
@@ -191,18 +197,18 @@ def dashboard():
     """).fetchall()
     all_due = sorted([row for row in invoices if row["balance"] > 0], key=lambda row: row["balance"], reverse=True)
     faculty_rows = []
-    for faculty_name in dict.fromkeys(row["faculty_name"] for row in invoices):
-        group = [row for row in invoices if row["faculty_name"] == faculty_name]
+    faculty_keys = dict.fromkeys((row["faculty_name"], row["currency"]) for row in invoices)
+    for faculty_name, currency in faculty_keys:
+        group = [row for row in invoices if row["faculty_name"] == faculty_name and row["currency"] == currency]
         billed = sum(row["billed"] for row in group)
         paid = sum(row["paid"] for row in group)
-        faculty_rows.append({"name": faculty_name, "students": len(group), "billed": billed,
+        faculty_rows.append({"name": faculty_name, "students": len({row["student_id"] for row in group}), "billed": billed,
                              "paid": paid, "balance": sum(row["balance"] for row in group),
                              "rate": round(paid / billed * 100) if billed else 0,
-                             "currency": group[0]["currency"]})
+                             "currency": currency})
     return render_template("dashboard.html", invoices=invoices, recent=recent, due=all_due[:4],
-                           due_count=len(all_due), faculties=faculty_rows, total_billed=total_billed,
-                           total_collected=total_collected, total_due=total_due,
-                           collection_rate=round(total_collected / total_billed * 100) if total_billed else 0)
+                           due_count=len(all_due), faculties=faculty_rows,
+                           currency_totals=list(currency_totals.values()))
 
 
 @app.route("/students")
