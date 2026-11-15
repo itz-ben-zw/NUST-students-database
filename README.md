@@ -64,7 +64,7 @@ The application checks the employee profile on each protected request. Setting `
 
 ## Public preview and fictional demo data
 
-Open `/preview` to view a public, read-only presentation page that works without an employee account or database connection. It contains static fictional examples only. The employee application remains protected by Supabase Auth and role checks.
+Open the site homepage (or `/preview`) to view a public, read-only presentation page that works without an employee account or database connection. It contains static fictional examples only. The employee application remains protected by Supabase Auth and role checks.
 
 To populate a dedicated demo database with relational sample data, run this from the project root:
 
