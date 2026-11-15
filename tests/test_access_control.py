@@ -1,4 +1,4 @@
-"""Fast, database-free regression tests for the demo's access boundaries."""
+"""Fast, database-free regression tests for the application's access boundaries."""
 import os
 
 os.environ.setdefault("SECRET_KEY", "ci-only-test-secret")
@@ -60,7 +60,7 @@ def test_public_preview_is_available_without_database_or_login():
     response = web_app.app.test_client().get("/preview")
     assert response.status_code == 200
     assert b"ACCOUNT OVERVIEW" in response.data
-    assert b"fictional" in response.data.lower()
+    assert b"illustrative sample records" in response.data.lower()
 
 
 def test_homepage_opens_public_preview_for_visitors():
