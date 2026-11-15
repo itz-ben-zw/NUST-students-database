@@ -324,7 +324,7 @@ def payments():
                 db.rollback()
                 flash("Payment exceeds the student's total outstanding balance in this currency.", "error")
                 return redirect(url_for("payments", student_id=student_id))
-            receipt_no = f"NUST-RCP-SAMPLE-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+            receipt_no = f"SA-RCP-SAMPLE-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
             actor = current_employee()
             recorded_by = actor.get("full_name") or actor["email"]
             cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference,recorded_by) VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
