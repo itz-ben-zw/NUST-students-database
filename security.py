@@ -131,3 +131,56 @@ def roles_required(*allowed_roles):
             return view(*args, **kwargs)
         return wrapped
     return decorate
+
+
+def list_employee_profiles() -> list[dict]:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Employee management has not been configured.")
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles",
+        params={"select": "user_id,email,full_name,role,is_active,created_at", "order": "created_at.desc"},
+        headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                 "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"},
+        timeout=12,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def invite_employee(email: str, full_name: str, role: str, invited_by: str) -> None:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Employee management has not been configured.")
+    allowed_roles = {"system_admin", "finance", "student_records", "auditor"}
+    if role not in allowed_roles:
+        raise ValueError("Choose a valid employee role.")
+    if not email.lower().endswith("@nust.ac.zw"):
+        raise ValueError("Only individually verified @nust.ac.zw staff addresses can be invited.")
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+               "Content-Type": "application/json"}
+    invite = requests.post(
+        f"{SUPABASE_URL}/auth/v1/invite",
+        headers=headers,
+        json={"email": email, "data": {"full_name": full_name}},
+        timeout=15,
+    )
+    if invite.status_code >= 400:
+        if invite.status_code == 422:
+            raise ValueError("This email may already have an account or invitation. Review it in Supabase Auth.")
+        invite.raise_for_status()
+    invited_user = invite.json()
+    user_id = invited_user.get("id") or invited_user.get("user", {}).get("id")
+    if not user_id:
+        raise AuthenticationUnavailable("Supabase sent an invitation but did not return a user ID.")
+    profile = requests.post(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles",
+        headers={**headers, "Prefer": "return=minimal"},
+        json={"user_id": user_id, "email": email, "full_name": full_name,
+              "role": role, "is_active": True, "invited_by": invited_by},
+        timeout=15,
+    )
+    if profile.status_code >= 400:
+        raise AuthenticationUnavailable(
+            "The invitation was sent, but the employee profile could not be created. "
+            "Do not resend it; inspect the employee_profiles table and Supabase Auth user."
+        )
