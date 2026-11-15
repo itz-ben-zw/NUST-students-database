@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import json
+import uuid
 import psycopg
 from psycopg.rows import dict_row
 from datetime import date, datetime
@@ -222,18 +224,36 @@ def payments():
         if not invoice:
             flash("This student has no outstanding invoice in that currency.", "error")
             return redirect(url_for("payments"))
-        if cents > invoice["balance"]:
-            flash("Payment is higher than this invoice’s remaining balance.", "error")
-            return redirect(url_for("payments"))
         try:
-            receipt_no = f"NUST-RCP-DEMO-{datetime.now().strftime('%y%m%d%H%M%S')}"
-            cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference) VALUES(%s,%s,%s,%s,%s,%s,%s) RETURNING id",
-                             (receipt_no, student_id, paid_on, cents, currency, method, reference))
+            # Lock the chosen invoice and re-read its balance inside this transaction.
+            db.execute("SELECT id FROM invoices WHERE id=%s FOR UPDATE", (invoice["id"],)).fetchone()
+            refreshed = decorate_invoices(invoice_rows("WHERE i.id=%s AND i.status!='Void'", (invoice["id"],)))
+            invoice = refreshed[0] if refreshed else None
+            if not invoice or invoice["balance"] <= 0 or invoice["currency"] != currency:
+                db.rollback()
+                flash("That invoice is no longer available for payment. Refresh and try again.", "error")
+                return redirect(url_for("payments"))
+            if cents > invoice["balance"]:
+                db.rollback()
+                flash("Payment is higher than this invoice’s remaining balance.", "error")
+                return redirect(url_for("payments"))
+            receipt_no = f"NUST-RCP-DEMO-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+            actor = current_employee()
+            recorded_by = actor.get("full_name") or actor["email"]
+            cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference,recorded_by) VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+                             (receipt_no, student_id, paid_on, cents, currency, method, reference, recorded_by))
             payment_id = cur.fetchone()["id"]
             db.execute("INSERT INTO payment_allocations(payment_id,invoice_id,amount_cents) VALUES(%s,%s,%s)",
                        (payment_id, invoice["id"], cents))
             if cents == invoice["balance"]:
                 db.execute("UPDATE invoices SET status='Paid' WHERE id=%s", (invoice["id"],))
+            db.execute(
+                "INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,details) VALUES(%s,%s,%s,%s,%s::jsonb)",
+                (actor["user_id"], "payment.recorded", "payment", str(payment_id),
+                 json.dumps({"receipt_no": receipt_no, "student_id": student_id,
+                             "amount_cents": cents, "currency": currency,
+                             "invoice_id": invoice["id"]})),
+            )
             db.commit()
         except psycopg.IntegrityError:
             db.rollback()
