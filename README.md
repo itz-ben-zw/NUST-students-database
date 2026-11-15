@@ -9,7 +9,7 @@ An academic database project: a Flask app with Supabase employee identity and a 
 - Browse and search students by student number, name, programme, or faculty.
 - View semester invoices and fee line totals.
 - Record USD or ZWG demo payments using EcoCash, bank transfer, or RTGS labels.
-- Allocate a payment to the student's oldest open invoice in the same currency.
+- Allocate a payment oldest-due-first across the student's open invoices in the same currency.
 - Print a receipt and faculty collection report.
 - Store financial values as integer cents, with no exchange-rate conversion.
 
