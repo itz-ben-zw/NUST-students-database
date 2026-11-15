@@ -20,3 +20,7 @@ jobs:
           pip install -r requirements.txt
       - name: Compile application modules
         run: python -m compileall -q app.py security.py
+      - name: Import Flask application
+        env:
+          SECRET_KEY: ci-only-test-secret
+        run: python -c "import app; assert app.app"
