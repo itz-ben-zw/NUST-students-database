@@ -248,3 +248,40 @@ def invite_employee(email: str, full_name: str, role: str, invited_by: str) -> N
         timeout=12,
     )
     audit.raise_for_status()
+
+
+def set_employee_active(user_id: str, active: bool, actor_id: str) -> None:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Employee management has not been configured.")
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+               "Content-Type": "application/json", "Prefer": "return=representation"}
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles",
+        params={"user_id": f"eq.{user_id}"},
+        headers=headers,
+        json={"is_active": active},
+        timeout=12,
+    )
+    response.raise_for_status()
+    if not response.json():
+        raise ValueError("Employee profile was not found.")
+    if not active:
+        revoked = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/employee_web_sessions",
+            params={"user_id": f"eq.{user_id}"},
+            headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                     "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"},
+            timeout=12,
+        )
+        revoked.raise_for_status()
+    audit = requests.post(
+        f"{SUPABASE_URL}/rest/v1/audit_logs",
+        headers={**headers, "Prefer": "return=minimal"},
+        json={"actor_user_id": actor_id,
+              "action": "employee.activated" if active else "employee.deactivated",
+              "entity_type": "employee_profile", "entity_id": user_id,
+              "details": {}},
+        timeout=12,
+    )
+    audit.raise_for_status()
