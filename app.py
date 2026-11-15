@@ -219,9 +219,17 @@ def students():
         sql += " WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s"
         params = (f"%{q}%",) * 5
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
-    balances = {row["student_no"]: row["balance"] for row in decorate_invoices(
-        invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))}
-    return render_template("students.html", students=rows, balances=balances, q=q)
+    account_invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
+    balances = {row["student_no"]: row["balance"] for row in account_invoices}
+    account_states = {}
+    for row in account_invoices:
+        if row["balance"] <= 0:
+            account_states[row["student_no"]] = "Paid"
+        elif row["paid"] > 0:
+            account_states[row["student_no"]] = "Partial"
+        else:
+            account_states[row["student_no"]] = "Owing"
+    return render_template("students.html", students=rows, balances=balances, account_states=account_states, q=q)
 
 
 @app.route("/invoices")
