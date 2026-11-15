@@ -65,7 +65,7 @@ def verify_access_token(token: str) -> dict:
             options={"require": ["exp", "iat", "sub", "iss", "aud"]},
             leeway=5,
         )
-    except jwt.InvalidTokenError as exc:
+    except jwt.PyJWTError as exc:
         raise ValueError("Your session is invalid or has expired. Please sign in again.") from exc
     except requests.RequestException as exc:
         raise AuthenticationUnavailable("Could not verify your session with Supabase Auth.") from exc
