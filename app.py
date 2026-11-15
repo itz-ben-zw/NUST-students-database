@@ -14,7 +14,7 @@ from flask import Flask, abort, flash, g, redirect, render_template, request, se
 from flask_wtf.csrf import CSRFProtect
 
 from security import (AuthenticationUnavailable, create_web_session, current_employee,
-                      delete_web_session, invite_employee, list_employee_profiles,
+                      delete_web_session, invite_employee, list_employee_profiles, set_employee_active,
                       login_required, roles_required, sign_in_with_password)
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
@@ -81,6 +81,20 @@ def logout():
 @app.route("/admin/employees", methods=["GET", "POST"])
 @roles_required("system_admin")
 def employee_admin():
+    if request.method == "POST" and request.form.get("action") == "toggle_active":
+        target_user_id = request.form.get("user_id", "")
+        active = request.form.get("active") == "true"
+        actor = current_employee()
+        if target_user_id == actor["user_id"] and not active:
+            flash("You cannot deactivate your own administrator account.", "error")
+            return redirect(url_for("employee_admin"))
+        try:
+            set_employee_active(target_user_id, active, actor["user_id"])
+            flash("Employee access updated.", "success")
+        except (ValueError, AuthenticationUnavailable, requests.RequestException) as exc:
+            app.logger.error("Employee access update failed: %s", exc)
+            flash("Could not update employee access. Review the employee record and audit log.", "error")
+        return redirect(url_for("employee_admin"))
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         full_name = request.form.get("full_name", "").strip()
