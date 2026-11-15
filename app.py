@@ -263,15 +263,20 @@ def students():
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
     account_invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
     balance_parts = {}
-    account_states = {}
+    account_totals = {}
     for row in account_invoices:
         balance_parts.setdefault(row["student_no"], []).append(money(row["balance"], row["currency"]))
-        if row["balance"] > 0:
-            account_states[row["student_no"]] = (
-                "Partial" if row["paid"] > 0 else account_states.get(row["student_no"], "Owing")
-            )
-        else:
-            account_states.setdefault(row["student_no"], "Paid")
+        totals = account_totals.setdefault(row["student_no"], {"paid": 0, "balance": 0})
+        totals["paid"] += row["paid"]
+        totals["balance"] += row["balance"]
+    account_states = {
+        student_no: (
+            "Paid" if totals["balance"] <= 0
+            else "Partial" if totals["paid"] > 0
+            else "Owing"
+        )
+        for student_no, totals in account_totals.items()
+    }
     balances = {student_no: " · ".join(parts) for student_no, parts in balance_parts.items()}
     return render_template("students.html", students=rows, balances=balances, account_states=account_states, q=q)
 
