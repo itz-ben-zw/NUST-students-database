@@ -324,8 +324,11 @@ def payments():
     """).fetchall()
     selected = request.args.get("receipt")
     receipt = next((row for row in recent if row["receipt_no"] == selected), None)
+    selected_student_id = request.args.get("student_id", type=int)
+    selected_currency = next((row["currency"] for row in rows if row["id"] == selected_student_id), "USD")
     return render_template("payments.html", students=rows, payments=recent, receipt=receipt,
-                           today=date.today().isoformat(), selected_student_id=request.args.get("student_id", type=int))
+                           today=date.today().isoformat(), selected_student_id=selected_student_id,
+                           selected_currency=selected_currency)
 
 
 @app.route("/reports")
