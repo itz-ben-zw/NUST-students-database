@@ -177,7 +177,7 @@ def students():
     """
     params = ()
     if q:
-        sql += " WHERE s.student_no LIKE %s OR s.first_name LIKE %s OR s.last_name LIKE %s OR p.name LIKE %s OR f.name LIKE %s"
+        sql += " WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s"
         params = (f"%{q}%",) * 5
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
     balances = {row["student_no"]: row["balance"] for row in decorate_invoices(
