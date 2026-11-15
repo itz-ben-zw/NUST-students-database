@@ -23,10 +23,10 @@
     <small id="preview-search-status" role="status" aria-live="polite">Search the five example accounts shown below. Sign in is required for account actions.</small>
   </form>
   <section class="preview-metrics" aria-label="Semester summary">
-    <article class="preview-metric"><span>Total invoiced</span><strong>USD 13,260.00</strong></article>
-    <article class="preview-metric"><span>Received</span><strong>USD 1,930.00</strong></article>
-    <article class="preview-metric"><span>Still owed</span><strong>USD 11,330.00</strong></article>
-    <article class="preview-metric"><span>Collection progress</span><strong>14.6%</strong></article>
+    <article class="preview-metric"><span>Total invoiced</span><strong data-count-up>USD 13,260.00</strong></article>
+    <article class="preview-metric"><span>Received</span><strong data-count-up>USD 1,930.00</strong></article>
+    <article class="preview-metric"><span>Still owed</span><strong data-count-up>USD 11,330.00</strong></article>
+    <article class="preview-metric"><span>Collection progress</span><strong data-count-up>14.6%</strong></article>
   </section>
   <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>5 example accounts shown</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
     <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
@@ -65,6 +65,7 @@
     </div>
   </footer>
 </div></main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 <script>
 (() => {
   const form = document.getElementById("preview-search-form");
