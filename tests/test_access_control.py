@@ -96,3 +96,37 @@ def test_dashboard_financial_totals_handle_empty_and_zero_billed_rows():
         "currency": "USD", "billed": 0, "paid": 0,
         "balance": 0, "rate": 0,
     }]
+
+
+
+def test_payment_allocation_spans_oldest_invoices_first():
+    invoices = [
+        {"id": 3, "due_on": "2026-10-01", "balance": 700},
+        {"id": 2, "due_on": "2026-09-01", "balance": 400},
+        {"id": 1, "due_on": "2026-08-01", "balance": 300},
+    ]
+
+    assert web_app.allocate_payment(900, invoices) == [(1, 300), (2, 400), (3, 200)]
+
+
+def test_payment_allocation_rejects_amount_above_total_balance():
+    invoices = [
+        {"id": 1, "due_on": "2026-08-01", "balance": 300},
+        {"id": 2, "due_on": "2026-09-01", "balance": 400},
+    ]
+
+    try:
+        web_app.allocate_payment(701, invoices)
+    except ValueError as exc:
+        assert "outstanding balance" in str(exc)
+    else:
+        raise AssertionError("An overpayment should be rejected.")
+
+
+def test_payment_allocation_handles_exact_total_balance():
+    invoices = [
+        {"id": 1, "due_on": "2026-08-01", "balance": 300},
+        {"id": 2, "due_on": "2026-09-01", "balance": 400},
+    ]
+
+    assert web_app.allocate_payment(700, invoices) == [(1, 300), (2, 400)]
