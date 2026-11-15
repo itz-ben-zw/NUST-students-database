@@ -20,19 +20,23 @@
   <section class="preview-hero">
     <div><p class="preview-context">Semester 2 · 2026</p><h1>Student accounts</h1><p>Find a student, check their balance and keep track of payments received across faculties.</p></div>
   </section>
-  <form class="preview-search" action="{{ url_for('login') }}" method="get"><label for="preview-search">Find a student</label><div><span aria-hidden="true">⌕</span><input id="preview-search" type="search" placeholder="Student name or number"><button type="submit">Sign in to search</button></div><small>Sign in is required to access student records and account actions.</small></form>
+  <form class="preview-search" id="preview-search-form">
+    <label for="preview-search-input">Find a student</label>
+    <div><span aria-hidden="true">⌕</span><input id="preview-search-input" name="q" type="search" placeholder="Student name or number" autocomplete="off"><button type="submit">Search</button></div>
+    <small id="preview-search-status" role="status" aria-live="polite">Search the five example accounts shown below. Sign in is required for account actions.</small>
+  </form>
   <section class="preview-metrics" aria-label="Semester summary">
     <article class="preview-metric"><span>Total invoiced</span><strong>USD 13,260.00</strong></article>
     <article class="preview-metric"><span>Received</span><strong>USD 1,930.00</strong></article>
     <article class="preview-metric"><span>Still owed</span><strong>USD 11,330.00</strong></article>
     <article class="preview-metric"><span>Collection progress</span><strong>14.6%</strong></article>
   </section>
-  <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>12 accounts</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
-    <tr><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+  <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>5 example accounts shown</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
+    <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
   </tbody></table></div><p class="preview-table-note">The public view is read-only. Sign in is required for account details and payment recording.</p></section>
   <section class="preview-columns">
     <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Collection progress</h2><p>Received compared with total invoiced.</p></div></div>
@@ -49,4 +53,24 @@
   </section>
   <footer class="preview-footer">Independent academic project · Illustrative sample records · No real student or payment information</footer>
 </div></main>
-</body></html>
+<script>
+(() => {
+  const form = document.getElementById("preview-search-form");
+  const input = document.getElementById("preview-search-input");
+  const status = document.getElementById("preview-search-status");
+  const rows = Array.from(document.querySelectorAll("[data-preview-account]"));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = input.value.trim().toLocaleLowerCase();
+    let matches = 0;
+    rows.forEach((row) => {
+      const matched = row.textContent.toLocaleLowerCase().includes(query);
+      row.hidden = !matched;
+      if (matched) matches += 1;
+    });
+    status.textContent = query ? `${matches} matching account${matches === 1 ? "" : "s"} found.` : `Showing all ${rows.length} example accounts.`;
+  });
+})();
+</script>
+</body>
+</html>
