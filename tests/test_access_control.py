@@ -67,3 +67,32 @@ def test_homepage_opens_public_preview_for_visitors():
     response = web_app.app.test_client().get("/")
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/preview")
+
+
+def test_dashboard_financial_totals_are_separated_by_currency():
+    rows = [
+        {"currency": "USD", "billed": 10000, "paid": 2500, "balance": 7500},
+        {"currency": "USD", "billed": 5000, "paid": 5000, "balance": 0},
+        {"currency": "ZWG", "billed": 90000, "paid": 30000, "balance": 60000},
+    ]
+
+    totals = {item["currency"]: item for item in web_app.summarize_financials(rows)}
+
+    assert totals["USD"] == {
+        "currency": "USD", "billed": 15000, "paid": 7500,
+        "balance": 7500, "rate": 50,
+    }
+    assert totals["ZWG"] == {
+        "currency": "ZWG", "billed": 90000, "paid": 30000,
+        "balance": 60000, "rate": 33,
+    }
+
+
+def test_dashboard_financial_totals_handle_empty_and_zero_billed_rows():
+    assert web_app.summarize_financials([]) == []
+    assert web_app.summarize_financials([
+        {"currency": "USD", "billed": 0, "paid": 0, "balance": 0}
+    ]) == [{
+        "currency": "USD", "billed": 0, "paid": 0,
+        "balance": 0, "rate": 0,
+    }]
