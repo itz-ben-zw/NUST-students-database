@@ -16,8 +16,8 @@ from security import AuthenticationUnavailable, current_employee, login_required
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("NUST_FEES_DB", BASE_DIR / "nust_students.db"))
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
-if not app.secret_key and os.environ.get("FLASK_ENV") == "production":
+app.secret_key = os.environ.get("SECRET_KEY") or (None if os.environ.get("FLASK_ENV") == "production" else os.urandom(32))
+if not app.secret_key:
     raise RuntimeError("SECRET_KEY must be set in production.")
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
