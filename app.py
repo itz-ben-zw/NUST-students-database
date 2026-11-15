@@ -235,8 +235,13 @@ def students():
 @app.route("/invoices")
 @roles_required("system_admin", "finance", "auditor")
 def invoices_page():
-    invoices = decorate_invoices(invoice_rows())
-    return render_template("invoices.html", invoices=invoices,
+    q = request.args.get("q", "").strip()
+    where, params = "", ()
+    if q:
+        where = "WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s"
+        params = (f"%{q}%",) * 3
+    invoices = decorate_invoices(invoice_rows(where, params))
+    return render_template("invoices.html", invoices=invoices, q=q,
                            outstanding=sum(row["balance"] for row in invoices))
 
 
