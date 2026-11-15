@@ -130,3 +130,32 @@ def test_payment_allocation_handles_exact_total_balance():
     ]
 
     assert web_app.allocate_payment(700, invoices) == [(1, 300), (2, 400)]
+
+
+
+def test_mixed_currency_invoice_rows_keep_allocations_separate():
+    # One invoice can have separate USD and ZWG balances.
+    invoice_rows = [
+        {"id": 41, "due_on": "2026-08-01", "currency": "USD", "balance": 12500},
+        {"id": 41, "due_on": "2026-08-01", "currency": "ZWG", "balance": 900000},
+    ]
+
+    usd_rows = [row for row in invoice_rows if row["currency"] == "USD"]
+    zwg_rows = [row for row in invoice_rows if row["currency"] == "ZWG"]
+
+    assert web_app.allocate_payment(5000, usd_rows) == [(41, 5000)]
+    assert web_app.allocate_payment(300000, zwg_rows) == [(41, 300000)]
+
+
+def test_mixed_currency_invoice_rejects_overpayment_in_selected_currency():
+    invoice_rows = [
+        {"id": 41, "due_on": "2026-08-01", "currency": "USD", "balance": 12500},
+        {"id": 41, "due_on": "2026-08-01", "currency": "ZWG", "balance": 900000},
+    ]
+
+    try:
+        web_app.allocate_payment(12501, [row for row in invoice_rows if row["currency"] == "USD"])
+    except ValueError as exc:
+        assert "outstanding balance" in str(exc)
+    else:
+        raise AssertionError("USD payment must not consume the ZWG balance.")
