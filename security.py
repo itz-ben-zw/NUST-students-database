@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import os
+import hashlib
+import secrets
+from datetime import datetime, timezone
 from functools import wraps
 
 import jwt
@@ -92,19 +95,71 @@ def get_employee_profile(user_id: str) -> dict | None:
     return rows[0] if rows else None
 
 
+def create_web_session(access_token: str, user_id: str) -> str:
+    opaque_id = secrets.token_urlsafe(40)
+    key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+    claims = verify_access_token(access_token)
+    expires_at = datetime.fromtimestamp(claims["exp"], timezone.utc).isoformat()
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/employee_web_sessions",
+        headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                 "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+                 "Content-Type": "application/json", "Prefer": "return=minimal"},
+        json={"session_key_hash": key_hash, "user_id": user_id,
+              "access_token": access_token, "expires_at": expires_at},
+        timeout=12,
+    )
+    response.raise_for_status()
+    return opaque_id
+
+
+def load_web_session(opaque_id: str) -> dict | None:
+    key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/employee_web_sessions",
+        params={"select": "user_id,access_token,expires_at",
+                "session_key_hash": f"eq.{key_hash}", "limit": "1"},
+        headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                 "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"},
+        timeout=12,
+    )
+    response.raise_for_status()
+    rows = response.json()
+    return rows[0] if rows else None
+
+
+def delete_web_session(opaque_id: str | None) -> None:
+    if not opaque_id or not _config_ready():
+        return
+    key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+    response = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/employee_web_sessions",
+        params={"session_key_hash": f"eq.{key_hash}"},
+        headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                 "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"},
+        timeout=12,
+    )
+    response.raise_for_status()
+
+
 def current_employee() -> dict | None:
     if "employee" in g:
         return g.employee
     g.employee = None
-    token = session.get("supabase_access_token")
-    if not token:
+    opaque_id = session.get("web_session_id")
+    if not opaque_id:
         return None
     try:
-        claims = verify_access_token(token)
+        stored = load_web_session(opaque_id)
+        if not stored:
+            session.clear()
+            return None
+        claims = verify_access_token(stored["access_token"])
         profile = get_employee_profile(claims["sub"])
-        if profile and profile.get("is_active"):
+        if profile and profile.get("is_active") and profile["user_id"] == stored["user_id"]:
             g.employee = profile
         else:
+            delete_web_session(opaque_id)
             session.clear()
     except (ValueError, AuthenticationUnavailable, requests.RequestException):
         session.clear()
