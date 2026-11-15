@@ -4,15 +4,6 @@ A one-day academic database project: a small Flask and SQLite app for exploring 
 
 > This is an independent academic demo. It is not built, approved, or operated by the National University of Science and Technology (NUST). All people, student numbers, invoices, payment references, dates, and fee amounts are fictional. The fee schedule is not NUST's official schedule. Do not use it for real student or payment data.
 
-## Run locally
-
-1. Install Python 3.10 or newer.
-2. Install dependencies: `python -m pip install -r requirements.txt`.
-3. Start the app: `python app.py`.
-4. Open `http://127.0.0.1:5000`.
-
-The app creates and seeds `nust_students.db` on first start. Delete that local file to restore the fictional demo records. `.db` files are excluded from Git.
-
 ## What it demonstrates
 
 - Browse and search students by student number, name, programme, or faculty.
