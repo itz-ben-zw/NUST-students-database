@@ -61,3 +61,9 @@ def test_public_preview_is_available_without_database_or_login():
     assert response.status_code == 200
     assert b"PUBLIC PREVIEW" in response.data
     assert b"fictional" in response.data.lower()
+
+
+def test_homepage_opens_public_preview_for_visitors():
+    response = web_app.app.test_client().get("/")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/preview")
