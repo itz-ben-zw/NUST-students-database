@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Employee access{% endblock %}
+{% block crumb %}Employee access{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">System administration</div><h1>Employee access<span class="wave">.</span></h1><p class="subtitle">Invite individually verified staff and assign least-privilege access.</p></div></section>
+<section class="payment-layout">
+  <article class="panel payment-form-panel">
+    <div class="panel-heading"><div><div class="section-kicker">New invitation</div><h2>Invite an employee</h2></div></div>
+    <form method="post" class="payment-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Full name</span><input name="full_name" maxlength="120" required></label>
+      <label class="field"><span>NUST work email</span><input type="email" name="email" placeholder="employee@nust.ac.zw" required></label>
+      <label class="field"><span>Access role</span><select name="role" required><option value="finance">Finance</option><option value="student_records">Student records</option><option value="auditor">Auditor / management (read-only)</option><option value="system_admin">System administrator</option></select></label>
+      <div class="form-note"><span>!</span><p>Verify employment and authority through an independent university channel before sending an invitation. An @nust.ac.zw address alone is not proof of employment.</p></div>
+      <button class="button primary full-button" type="submit">Send invitation →</button>
+    </form>
+  </article>
+  <article class="panel payment-history">
+    <div class="panel-heading"><div><div class="section-kicker">Access register</div><h2>Invited employees</h2></div></div>
+    {% for employee in employees %}
+    <div class="history-row"><span class="history-check">{{ '✓' if employee.is_active else '×' }}</span><span><strong>{{ employee.full_name or employee.email }}</strong><small>{{ employee.email }} · {{ employee.role|replace('_',' ') }}</small></span><b>{{ 'Active' if employee.is_active else 'Disabled' }}</b></div>
+    {% else %}<p class="muted">No employee profiles have been provisioned yet.</p>{% endfor %}
+  </article>
+</section>
+{% endblock %}
