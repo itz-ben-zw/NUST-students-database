@@ -4,6 +4,7 @@ import os
 os.environ.setdefault("SECRET_KEY", "ci-only-test-secret")
 
 import app as web_app
+import security
 
 
 def employee(role):
@@ -24,19 +25,19 @@ def test_anonymous_users_are_redirected_to_sign_in():
 
 
 def test_finance_role_cannot_open_student_records(monkeypatch):
-    monkeypatch.setattr(web_app, "current_employee", lambda: employee("finance"))
+    monkeypatch.setattr(security, "current_employee", lambda: employee("finance"))
     response = web_app.app.test_client().get("/students")
     assert response.status_code == 403
 
 
 def test_student_records_role_cannot_record_payments(monkeypatch):
-    monkeypatch.setattr(web_app, "current_employee", lambda: employee("student_records"))
+    monkeypatch.setattr(security, "current_employee", lambda: employee("student_records"))
     response = web_app.app.test_client().get("/payments")
     assert response.status_code == 403
 
 
 def test_auditor_role_cannot_record_payments(monkeypatch):
-    monkeypatch.setattr(web_app, "current_employee", lambda: employee("auditor"))
+    monkeypatch.setattr(security, "current_employee", lambda: employee("auditor"))
     response = web_app.app.test_client().get("/payments")
     assert response.status_code == 403
 
@@ -53,3 +54,10 @@ def test_login_post_without_csrf_token_is_rejected():
         data={"email": "test@nust.ac.zw", "password": "not-a-real-password"},
     )
     assert response.status_code == 400
+
+
+def test_public_preview_is_available_without_database_or_login():
+    response = web_app.app.test_client().get("/preview")
+    assert response.status_code == 200
+    assert b"PUBLIC PREVIEW" in response.data
+    assert b"fictional" in response.data.lower()
