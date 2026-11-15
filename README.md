@@ -61,3 +61,38 @@ set role = excluded.role,
 The application checks the employee profile on each protected request. Setting `is_active = false` blocks further application access on the next request. This does not replace revoking sessions in Supabase Auth when immediate token invalidation is required.
 
 **Important current limitation:** the Flask business routes now use Supabase PostgreSQL and payment writes are transactional with invoice row locking and audit entries. The database is still empty, and no demo seeding script has been run. Real operational use still requires university authorisation, formal data governance, backups, MFA policy, session revocation procedures, testing and review of the finance workflow.
+
+## Public preview and fictional demo data
+
+Open `/preview` to view a public, read-only presentation page that works without an employee account or database connection. It contains static fictional examples only. The employee application remains protected by Supabase Auth and role checks.
+
+To populate a dedicated demo database with relational sample data, run this from the project root:
+
+```bash
+ALLOW_DEMO_SEED=true DATABASE_URL="postgresql://...?...sslmode=require" python scripts/seed_demo_data.py
+```
+
+The seeder is opt-in, additive, and idempotent. It creates 12 fictional students, 12 invoices, and 4 sample receipts using `DEMO`-prefixed identifiers. It does not delete records or overwrite existing rows. Run it only against a database reserved for this academic demo, and remove `ALLOW_DEMO_SEED` immediately after use. Never run it against a real university or production student database.
+
+## Render deployment
+
+For a single Render Web Service linked to this repository:
+
+- Runtime: Python 3
+- Python version: 3.12
+- Build command: `pip install -r requirements.txt`
+- Start command: `gunicorn app:app --bind 0.0.0.0:$PORT`
+- Recommended region: Frankfurt, close to the existing Supabase project region (`eu-central-1`)
+
+Set these environment variables in Render's private Environment settings:
+
+| Variable | Purpose |
+| --- | --- |
+| `SECRET_KEY` | Strong, unique random Flask session secret |
+| `FLASK_ENV` | Set to `production` |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Supabase publishable/anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase service role key |
+| `DATABASE_URL` | Supabase PostgreSQL connection string with `sslmode=require` or stronger |
+
+Never place the service-role key or database connection string in browser code, GitHub, or chat. The public `/preview` page is viewable before database credentials are configured; employee sign-in and database-backed pages require all private variables and an authorised employee profile.
