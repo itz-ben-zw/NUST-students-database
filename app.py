@@ -206,7 +206,7 @@ def dashboard():
 
 
 @app.route("/students")
-@roles_required("system_admin", "finance", "student_records", "auditor")
+@roles_required("system_admin", "student_records", "auditor")
 def students():
     q = request.args.get("q", "").strip()
     sql = """
