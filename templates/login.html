@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Employee sign in{% endblock %}
+{% block crumb %}Employee sign in{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">Restricted workspace</div><h1>Employee sign in<span class="wave">.</span></h1><p class="subtitle">Access is limited to individually invited and approved employees.</p></div></section>
+<section class="panel payment-form-panel" style="max-width:520px;margin:32px auto">
+  <div class="panel-heading"><div><div class="section-kicker">Supabase Auth</div><h2>Sign in to your account</h2></div></div>
+  <form method="post" class="payment-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="username" required></label>
+    <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+    <button class="button primary full-button" type="submit">Sign in securely →</button>
+  </form>
+  <p class="muted" style="margin-top:18px">There is no public registration. If you have not received an invitation and approval, contact the system administrator.</p>
+</section>
+{% endblock %}
