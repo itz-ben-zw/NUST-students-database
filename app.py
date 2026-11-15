@@ -174,8 +174,12 @@ def decorate_invoices(rows):
 
 
 @app.route("/")
-@roles_required("system_admin", "finance", "student_records", "auditor")
 def dashboard():
+    employee = current_employee()
+    if employee is None:
+        return redirect(url_for("public_preview"))
+    if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor"}:
+        abort(403)
     invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
     total_billed = sum(row["billed"] for row in invoices)
     total_collected = sum(row["paid"] for row in invoices)
