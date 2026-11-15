@@ -271,13 +271,24 @@ def invoices_page():
 @app.route("/payments", methods=["GET", "POST"])
 def payments():
     db = get_db()
+    today = date.today().isoformat()
+    form_data = {}
+    form_error = None
     if request.method == "POST":
+        form_data = {
+            "student_id": request.form.get("student_id", ""),
+            "amount": request.form.get("amount", ""),
+            "currency": request.form.get("currency", "USD"),
+            "paid_on": request.form.get("paid_on", ""),
+            "method": request.form.get("method", ""),
+            "reference": request.form.get("reference", ""),
+        }
         student_id = request.form.get("student_id", type=int)
-        raw_amount = request.form.get("amount", "").strip()
-        paid_on = request.form.get("paid_on", "").strip()
-        currency = request.form.get("currency", "USD")
-        method = request.form.get("method", "")
-        reference = request.form.get("reference", "").strip() or None
+        raw_amount = form_data["amount"].strip()
+        paid_on = form_data["paid_on"].strip()
+        currency = form_data["currency"]
+        method = form_data["method"]
+        reference = form_data["reference"].strip() or None
         try:
             amount = Decimal(raw_amount).quantize(Decimal("0.01"))
             if amount <= 0:
@@ -285,35 +296,34 @@ def payments():
             cents = int(amount * 100)
             datetime.strptime(paid_on, "%Y-%m-%d")
         except (InvalidOperation, ValueError, TypeError):
-            flash("Enter a valid payment amount and date.", "error")
-            return redirect(url_for("payments"))
-        if currency not in ("USD", "ZWG") or method not in ("EcoCash", "Bank transfer", "RTGS"):
-            flash("Choose a listed currency and payment method.", "error")
-            return redirect(url_for("payments"))
-        current = decorate_invoices(invoice_rows("WHERE i.student_id=? AND i.status!='Void'", (student_id,)))
-        invoice = next((row for row in sorted(current, key=lambda item: (item["due_on"], item["id"]))
-                        if row["balance"] > 0 and row["currency"] == currency), None)
-        if not invoice:
-            flash("This student has no outstanding invoice in that currency.", "error")
-            return redirect(url_for("payments"))
-        if cents > invoice["balance"]:
-            flash("Payment is higher than this invoice’s remaining balance.", "error")
-            return redirect(url_for("payments"))
-        try:
-            receipt_no = f"NUST-RCP-DEMO-{datetime.now().strftime('%y%m%d%H%M%S')}"
-            cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference) VALUES(?,?,?,?,?,?,?)",
-                             (receipt_no, student_id, paid_on, cents, currency, method, reference))
-            db.execute("INSERT INTO payment_allocations(payment_id,invoice_id,amount_cents) VALUES(?,?,?)",
-                       (cur.lastrowid, invoice["id"], cents))
-            if cents == invoice["balance"]:
-                db.execute("UPDATE invoices SET status='Paid' WHERE id=?", (invoice["id"],))
-            db.commit()
-        except sqlite3.IntegrityError:
-            db.rollback()
-            flash("Could not save the payment. Please try again.", "error")
-            return redirect(url_for("payments"))
-        flash(f"Demo payment recorded. Receipt {receipt_no} is ready.", "success")
-        return redirect(url_for("payments", receipt=receipt_no))
+            form_error = "Enter a valid payment amount and date."
+        if form_error is None and (currency not in ("USD", "ZWG") or method not in ("EcoCash", "Bank transfer", "RTGS")):
+            form_error = "Choose a listed currency and payment method."
+        invoice = None
+        if form_error is None:
+            current = decorate_invoices(invoice_rows("WHERE i.student_id=? AND i.status!='Void'", (student_id,)))
+            invoice = next((row for row in sorted(current, key=lambda item: (item["due_on"], item["id"]))
+                            if row["balance"] > 0 and row["currency"] == currency), None)
+            if not invoice:
+                form_error = "This student has no outstanding invoice in that currency."
+        if form_error is None and cents > invoice["balance"]:
+            form_error = "Payment is higher than this invoice’s remaining balance."
+        if form_error is None:
+            try:
+                receipt_no = f"NUST-RCP-DEMO-{datetime.now().strftime('%y%m%d%H%M%S')}"
+                cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference) VALUES(?,?,?,?,?,?,?)",
+                                 (receipt_no, student_id, paid_on, cents, currency, method, reference))
+                db.execute("INSERT INTO payment_allocations(payment_id,invoice_id,amount_cents) VALUES(?,?,?)",
+                           (cur.lastrowid, invoice["id"], cents))
+                if cents == invoice["balance"]:
+                    db.execute("UPDATE invoices SET status='Paid' WHERE id=?", (invoice["id"],))
+                db.commit()
+            except sqlite3.IntegrityError:
+                db.rollback()
+                form_error = "Could not save the payment. Please try again."
+            else:
+                flash(f"Demo payment recorded. Receipt {receipt_no} is ready.", "success")
+                return redirect(url_for("payments", receipt=receipt_no))
     rows = db.execute("""
       SELECT s.id,s.student_no,s.first_name,s.last_name,p.name AS programme_name,
         COALESCE((SELECT SUM(il.amount_cents) FROM invoices i JOIN invoice_lines il ON il.invoice_id=i.id WHERE i.student_id=s.id),0)-
@@ -328,7 +338,7 @@ def payments():
     selected = request.args.get("receipt")
     receipt = next((row for row in recent if row["receipt_no"] == selected), None)
     return render_template("payments.html", students=rows, payments=recent, receipt=receipt,
-                           today=date.today().isoformat())
+                           today=today, form_data=form_data, form_error=form_error)
 
 
 @app.route("/reports")
