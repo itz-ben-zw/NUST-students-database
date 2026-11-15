@@ -3,50 +3,86 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f5ef">
+  <meta name="theme-color" content="#f3f6fa">
   <title>Student Accounts System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 <main class="preview-page"><div class="preview-wrap">
   <header class="preview-header">
-    <a class="preview-brand" href="{{ url_for('public_preview') }}"><span class="preview-brand-mark">N</span><span>STUDENT ACCOUNTS<small>Accounts management</small></span></a>
-    <span class="preview-pill">ACCOUNT OVERVIEW</span>
+    <a class="preview-brand" href="{{ url_for('public_preview') }}"><span class="preview-brand-mark">SA</span><span>Student accounts<small>Accounts management</small></span></a>
+    <a class="preview-login" href="{{ url_for('login') }}">Sign in</a>
   </header>
+  <div class="preview-warning"><strong>Illustrative records</strong><span>All names, student numbers, balances and transactions on this page are fictional.</span></div>
   <section class="preview-hero">
-    <div><div class="preview-eyebrow">Semester register · 2026</div><h1>Accounts overview.</h1><p>A clear view of student accounts, semester charges, payments and outstanding balances.</p></div>
-    <a class="preview-login" href="{{ url_for('login') }}">Employee sign in&nbsp; →</a>
+    <div><p class="preview-context">Semester 2 · 2026</p><h1>Student accounts</h1><p>Find a student, check their balance and keep track of payments received across faculties.</p></div>
   </section>
-  <div class="preview-warning">SAMPLE DATA · RECORDS AND AMOUNTS ARE ILLUSTRATIVE · NO PAYMENTS CAN BE MADE HERE</div>
-  <section class="preview-metrics" aria-label="Account summary">
-    <article class="preview-metric"><span>Total invoiced</span><strong>USD 13,260.00</strong><small>12 sample accounts</small></article>
-    <article class="preview-metric"><span>Payments received</span><strong>USD 1,930.00</strong><small>4 sample receipts</small></article>
-    <article class="preview-metric"><span>Outstanding</span><strong>USD 11,330.00</strong><small>11 accounts with balances</small></article>
-    <article class="preview-metric"><span>Collection rate</span><strong>14.6%</strong><small>Illustrative semester figures</small></article>
+  <form class="preview-search" id="preview-search-form">
+    <label for="preview-search-input">Find a student</label>
+    <div><span aria-hidden="true">⌕</span><input id="preview-search-input" name="q" type="search" placeholder="Student name or number" autocomplete="off"><button type="submit">Search</button></div>
+    <small id="preview-search-status" role="status" aria-live="polite">Search the five example accounts shown below. Sign in is required for account actions.</small>
+  </form>
+  <section class="preview-metrics" aria-label="Semester summary">
+    <article class="preview-metric"><span>Total invoiced</span><strong>USD 13,260.00</strong></article>
+    <article class="preview-metric"><span>Received</span><strong>USD 1,930.00</strong></article>
+    <article class="preview-metric"><span>Still owed</span><strong>USD 11,330.00</strong></article>
+    <article class="preview-metric"><span>Collection progress</span><strong>14.6%</strong></article>
   </section>
+  <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>5 example accounts shown</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
+    <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+  </tbody></table></div><p class="preview-table-note">The public view is read-only. Sign in is required for account details and payment recording.</p></section>
   <section class="preview-columns">
-    <article class="preview-panel"><div class="preview-kicker">Faculty register</div><h2>Collections by faculty</h2>
-      <div class="preview-faculty"><div><strong>Computing</strong><small>6 student accounts · 24% collected</small><div class="preview-bar"><i style="width:24%"></i></div></div><div class="preview-amount">USD 1,530<small>received</small></div><div class="preview-amount">USD 4,950<small>still due</small></div></div>
-      <div class="preview-faculty"><div><strong>Engineering</strong><small>3 student accounts · 11% collected</small><div class="preview-bar"><i style="width:11%"></i></div></div><div class="preview-amount">USD 400<small>received</small></div><div class="preview-amount">USD 3,350<small>still due</small></div></div>
-      <div class="preview-faculty"><div><strong>Applied Sciences</strong><small>3 student accounts · 0% collected</small><div class="preview-bar"><i style="width:0%"></i></div></div><div class="preview-amount">USD 0<small>received</small></div><div class="preview-amount">USD 3,030<small>still due</small></div></div>
+    <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Collection progress</h2><p>Received compared with total invoiced.</p></div></div>
+      <div class="preview-faculty"><div><strong>Computing</strong><small>6 student accounts</small><div class="preview-bar"><i style="width:24%"></i></div></div><div class="preview-amount">24%<small>received</small></div></div>
+      <div class="preview-faculty"><div><strong>Engineering</strong><small>3 student accounts</small><div class="preview-bar"><i style="width:11%"></i></div></div><div class="preview-amount">11%<small>received</small></div></div>
+      <div class="preview-faculty"><div><strong>Applied Sciences</strong><small>3 student accounts</small><div class="preview-bar"><i style="width:0%"></i></div></div><div class="preview-amount">0%<small>received</small></div></div>
     </article>
-    <article class="preview-panel"><div class="preview-kicker">Receipt book</div><h2>Recent payments</h2>
-      <div class="preview-receipt"><span><strong>Tawanda Dube</strong><small>SAMPLE-RCP-2026-0002 · Bank transfer</small></span><b>USD 1,080</b></div>
-      <div class="preview-receipt"><span><strong>Nyasha Ndlovu</strong><small>SAMPLE-RCP-2026-0003 · RTGS</small></span><b>USD 400</b></div>
-      <div class="preview-receipt"><span><strong>Tariro Moyo</strong><small>SAMPLE-RCP-2026-0001 · EcoCash</small></span><b>USD 250</b></div>
-      <div class="preview-receipt"><span><strong>Rudo Mupfumi</strong><small>SAMPLE-RCP-2026-0004 · EcoCash</small></span><b>USD 200</b></div>
+    <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Recent payments</h2><p>Latest illustrative transactions.</p></div></div>
+      <div class="preview-receipt"><span><strong>Tawanda Dube</strong><small>Bank transfer · 12 Nov 2026</small></span><b>USD 1,080</b></div>
+      <div class="preview-receipt"><span><strong>Nyasha Ndlovu</strong><small>RTGS · 10 Nov 2026</small></span><b>USD 400</b></div>
+      <div class="preview-receipt"><span><strong>Tariro Moyo</strong><small>EcoCash · 08 Nov 2026</small></span><b>USD 250</b></div>
+      <div class="preview-receipt"><span><strong>Rudo Mupfumi</strong><small>EcoCash · 06 Nov 2026</small></span><b>USD 200</b></div>
     </article>
   </section>
-  <section class="preview-panel" style="margin-top:16px"><div class="preview-kicker">Student register</div><h2>Sample student accounts</h2><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Balance</th></tr></thead><tbody>
-    <tr><td><strong>Tariro Moyo</strong></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td>Registered</td><td>USD 830.00</td></tr>
-    <tr><td><strong>Tawanda Dube</strong></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td>Registered</td><td>USD 0.00</td></tr>
-    <tr><td><strong>Nyasha Ndlovu</strong></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td>Registered</td><td>USD 850.00</td></tr>
-    <tr><td><strong>Kudzai Sibanda</strong></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td>Registered</td><td>USD 1,010.00</td></tr>
-    <tr><td><strong>Rudo Mupfumi</strong></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td>Registered</td><td>USD 880.00</td></tr>
-  </tbody></table></div></section>
-  <footer class="preview-footer">Illustrative sample records · No real student or payment information</footer>
+  <footer class="preview-footer">
+    <div class="preview-footer-main">
+      <div class="preview-footer-brand">
+        <span class="preview-footer-mark" aria-hidden="true">SA</span>
+        <span><strong>Student Accounts</strong><small>Independent academic project</small></span>
+      </div>
+      <nav class="preview-footer-links" aria-label="Footer links">
+        <a href="https://www.nust.ac.zw/index.php/privacy-notice.html" target="_blank" rel="noopener noreferrer">NUST website privacy notice</a>
+        <a href="https://www.nust.ac.zw/" target="_blank" rel="noopener noreferrer">NUST website</a>
+      </nav>
+    </div>
+    <div class="preview-footer-bottom">
+      <span>© 2026 Student Accounts. All rights reserved.</span>
+      <span>Independent academic project · Not an official NUST service · Illustrative records only</span>
+    </div>
+  </footer>
 </div></main>
-</body></html>
+<script>
+(() => {
+  const form = document.getElementById("preview-search-form");
+  const input = document.getElementById("preview-search-input");
+  const status = document.getElementById("preview-search-status");
+  const rows = Array.from(document.querySelectorAll("[data-preview-account]"));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = input.value.trim().toLocaleLowerCase();
+    let matches = 0;
+    rows.forEach((row) => {
+      const matched = row.textContent.toLocaleLowerCase().includes(query);
+      row.hidden = !matched;
+      if (matched) matches += 1;
+    });
+    status.textContent = query ? `${matches} matching account${matches === 1 ? "" : "s"} found.` : `Showing all ${rows.length} example accounts.`;
+  });
+})();
+</script>
+</body>
+</html>
