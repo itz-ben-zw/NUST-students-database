@@ -17,10 +17,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt pytest
       - name: Compile application modules
-        run: python -m compileall -q app.py security.py
+        run: python -m compileall -q app.py security.py tests
       - name: Import Flask application
         env:
           SECRET_KEY: ci-only-test-secret
         run: python -c "import app; assert app.app"
+      - name: Run access-control and CSRF regression tests
+        env:
+          SECRET_KEY: ci-only-test-secret
+        run: pytest -q
