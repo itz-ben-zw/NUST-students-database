@@ -17,12 +17,12 @@ The faculty and programme labels are examples based on publicly listed NUST acad
 
 ## Data model
 
-The original SQLite prototype has 12 related tables. The Supabase PostgreSQL schema adds employee_profiles and audit_logs for controlled employee access and auditability. The academic tables are `faculties`, `programmes`, `sponsors`, `students`, `student_sponsors`, `academic_semesters`, `fee_types`, `semester_fees`, `invoices`, `invoice_lines`, `payments`, and `payment_allocations`. See [`schema.sql`](schema.sql).
+The academic model has 12 related tables: `faculties`, `programmes`, `sponsors`, `students`, `student_sponsors`, `academic_semesters`, `fee_types`, `semester_fees`, `invoices`, `invoice_lines`, `payments`, and `payment_allocations`. The PostgreSQL schema adds `employee_profiles`, `employee_web_sessions`, and `audit_logs` for employee access and auditing. See [`db/schema.postgres.sql`](db/schema.postgres.sql).
 
 ## Safety and scope
 
 - `.env`, local databases, Python environments, and logs are excluded by `.gitignore`.
-- The app uses a temporary random session key when `SECRET_KEY` is unset. For a persistent private deployment, set a strong secret in the environment.
+- The app refuses to start unless a strong `SECRET_KEY` is configured. Set `FLASK_ENV=production` in hosted environments so session cookies use the Secure flag.
 - Employee sign-in uses Supabase Auth. There is no public registration route; only invited users with an active employee_profiles record and an assigned role can access protected pages.
 - The Flask server verifies Supabase JWT signatures and reads employee roles server-side using the service-role key. Never expose SUPABASE_SERVICE_ROLE_KEY to a browser or commit it.
 - Set SECRET_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY as server environment variables before enabling employee sign-in.
@@ -60,4 +60,4 @@ set role = excluded.role,
 
 The application checks the employee profile on each protected request. Setting `is_active = false` blocks further application access on the next request. This does not replace revoking sessions in Supabase Auth when immediate token invalidation is required.
 
-**Important current limitation:** the web application's business data layer still uses Supabase PostgreSQL. The Supabase PostgreSQL schema exists, but the Flask queries, payment transactions and demo seed process have not yet been migrated. This app is not ready for real records or operational use.
+**Important current limitation:** the Flask business routes now use Supabase PostgreSQL and payment writes are transactional with invoice row locking and audit entries. The database is still empty, and no demo seeding script has been run. Real operational use still requires university authorisation, formal data governance, backups, MFA policy, session revocation procedures, testing and review of the finance workflow.
