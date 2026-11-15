@@ -173,6 +173,23 @@ def decorate_invoices(rows):
     return [dict(row) | {"balance": max(0, row["billed"] - row["paid"])} for row in rows]
 
 
+def allocate_payment(cents, invoices):
+    """Allocate a payment oldest-due-first without crossing currency boundaries."""
+    remaining = cents
+    allocations = []
+    for invoice in sorted(invoices, key=lambda row: (row["due_on"], row["id"])):
+        available = max(0, invoice["balance"])
+        allocated = min(remaining, available)
+        if allocated:
+            allocations.append((invoice["id"], allocated))
+            remaining -= allocated
+        if remaining == 0:
+            break
+    if remaining:
+        raise ValueError("Payment exceeds the outstanding balance in this currency.")
+    return allocations
+
+
 def summarize_financials(rows):
     """Aggregate invoice totals independently for each currency."""
     totals_by_currency = {}
@@ -284,41 +301,49 @@ def payments():
         if currency not in ("USD", "ZWG") or method not in ("EcoCash", "Bank transfer", "RTGS"):
             flash("Choose a listed currency and payment method.", "error")
             return redirect(url_for("payments"))
-        current = decorate_invoices(invoice_rows("WHERE i.student_id=%s AND i.status!='Void'", (student_id,)))
-        invoice = next((row for row in sorted(current, key=lambda item: (item["due_on"], item["id"]))
-                        if row["balance"] > 0 and row["currency"] == currency), None)
-        if not invoice:
-            flash("This student has no outstanding invoice in that currency.", "error")
-            return redirect(url_for("payments"))
         try:
-            # Lock the chosen invoice and re-read its balance inside this transaction.
-            db.execute("SELECT id FROM invoices WHERE id=%s FOR UPDATE", (invoice["id"],)).fetchone()
-            refreshed = decorate_invoices(invoice_rows("WHERE i.id=%s AND i.status!='Void'", (invoice["id"],)))
-            invoice = refreshed[0] if refreshed else None
-            if not invoice or invoice["balance"] <= 0 or invoice["currency"] != currency:
+            # Lock every candidate invoice in a stable order, then recalculate balances.
+            db.execute(
+                """SELECT id FROM invoices
+                   WHERE student_id=%s AND status!='Void'
+                     AND id IN (SELECT invoice_id FROM invoice_lines WHERE currency=%s)
+                   ORDER BY due_on,id FOR UPDATE""",
+                (student_id, currency),
+            ).fetchall()
+            current = decorate_invoices(invoice_rows(
+                "WHERE i.student_id=%s AND i.status!='Void'", (student_id,)
+            ))
+            eligible = [row for row in current if row["currency"] == currency and row["balance"] > 0]
+            if not eligible:
                 db.rollback()
-                flash("That invoice is no longer available for payment. Refresh and try again.", "error")
-                return redirect(url_for("payments"))
-            if cents > invoice["balance"]:
+                flash("This student has no outstanding invoice in that currency.", "error")
+                return redirect(url_for("payments", student_id=student_id))
+            try:
+                allocations = allocate_payment(cents, eligible)
+            except ValueError:
                 db.rollback()
-                flash("Payment is higher than this invoice’s remaining balance.", "error")
-                return redirect(url_for("payments"))
+                flash("Payment exceeds the student's total outstanding balance in this currency.", "error")
+                return redirect(url_for("payments", student_id=student_id))
             receipt_no = f"NUST-RCP-SAMPLE-{datetime.now().strftime('%y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
             actor = current_employee()
             recorded_by = actor.get("full_name") or actor["email"]
             cur = db.execute("INSERT INTO payments(receipt_no,student_id,paid_on,amount_cents,currency,method,reference,recorded_by) VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
                              (receipt_no, student_id, paid_on, cents, currency, method, reference, recorded_by))
             payment_id = cur.fetchone()["id"]
-            db.execute("INSERT INTO payment_allocations(payment_id,invoice_id,amount_cents) VALUES(%s,%s,%s)",
-                       (payment_id, invoice["id"], cents))
-            if cents == invoice["balance"]:
-                db.execute("UPDATE invoices SET status='Paid' WHERE id=%s", (invoice["id"],))
+            for invoice_id, allocated_cents in allocations:
+                db.execute(
+                    "INSERT INTO payment_allocations(payment_id,invoice_id,amount_cents) VALUES(%s,%s,%s)",
+                    (payment_id, invoice_id, allocated_cents),
+                )
+                invoice_row = next(row for row in eligible if row["id"] == invoice_id)
+                if allocated_cents == invoice_row["balance"]:
+                    db.execute("UPDATE invoices SET status='Paid' WHERE id=%s", (invoice_id,))
             db.execute(
                 "INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,details) VALUES(%s,%s,%s,%s,%s::jsonb)",
                 (actor["user_id"], "payment.recorded", "payment", str(payment_id),
                  json.dumps({"receipt_no": receipt_no, "student_id": student_id,
                              "amount_cents": cents, "currency": currency,
-                             "invoice_id": invoice["id"]})),
+                             "invoice_ids": [invoice_id for invoice_id, _ in allocations]})),
             )
             db.commit()
         except psycopg.IntegrityError:
@@ -329,10 +354,34 @@ def payments():
         return redirect(url_for("payments", receipt=receipt_no))
     rows = db.execute("""
       SELECT s.id,s.student_no,s.first_name,s.last_name,p.name AS programme_name,
-        COALESCE((SELECT SUM(il.amount_cents) FROM invoices i JOIN invoice_lines il ON il.invoice_id=i.id WHERE i.student_id=s.id),0)-
-        COALESCE((SELECT SUM(pa.amount_cents) FROM invoices i JOIN payment_allocations pa ON pa.invoice_id=i.id WHERE i.student_id=s.id),0) AS balance,
-        COALESCE((SELECT currency FROM invoices i JOIN invoice_lines il ON il.invoice_id=i.id WHERE i.student_id=s.id LIMIT 1),'USD') AS currency
-      FROM students s JOIN programmes p ON p.id=s.programme_id WHERE s.status!='Deferred' ORDER BY s.last_name
+        il.currency,
+        SUM(il.amount_cents)-COALESCE((
+          SELECT SUM(pa.amount_cents)
+          FROM invoices pi
+          JOIN payment_allocations pa ON pa.invoice_id=pi.id
+          WHERE pi.student_id=s.id AND pi.status!='Void'
+            AND EXISTS (
+              SELECT 1 FROM invoice_lines pil
+              WHERE pil.invoice_id=pi.id AND pil.currency=il.currency
+            )
+        ),0) AS balance
+      FROM students s
+      JOIN programmes p ON p.id=s.programme_id
+      JOIN invoices i ON i.student_id=s.id AND i.status!='Void'
+      JOIN invoice_lines il ON il.invoice_id=i.id
+      WHERE s.status!='Deferred'
+      GROUP BY s.id,s.student_no,s.first_name,s.last_name,p.name,il.currency
+      HAVING SUM(il.amount_cents)-COALESCE((
+          SELECT SUM(pa.amount_cents)
+          FROM invoices pi
+          JOIN payment_allocations pa ON pa.invoice_id=pi.id
+          WHERE pi.student_id=s.id AND pi.status!='Void'
+            AND EXISTS (
+              SELECT 1 FROM invoice_lines pil
+              WHERE pil.invoice_id=pi.id AND pil.currency=il.currency
+            )
+        ),0) > 0
+      ORDER BY s.last_name,s.first_name,il.currency
     """).fetchall()
     recent = db.execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no
