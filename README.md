@@ -26,7 +26,7 @@ The original SQLite prototype has 12 related tables. The Supabase PostgreSQL sch
 - Employee sign-in uses Supabase Auth. There is no public registration route; only invited users with an active employee_profiles record and an assigned role can access protected pages.
 - The Flask server verifies Supabase JWT signatures and reads employee roles server-side using the service-role key. Never expose SUPABASE_SERVICE_ROLE_KEY to a browser or commit it.
 - Set SECRET_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY as server environment variables before enabling employee sign-in.
-- The current Flask data layer is still the local SQLite prototype. Supabase PostgreSQL schema has been created, but business data routes have not yet been migrated to PostgreSQL. Do not deploy this as a live university system or enter real records.
+- The Flask business-data routes connect to Supabase PostgreSQL through DATABASE_URL. The PostgreSQL schema has been created and is protected by RLS; the server uses a database connection string that must remain private. Do not deploy this as a live university system or enter real records until the remaining security, audit and operational controls are reviewed.
 - No real payment integration or exchange-rate conversion is provided. Keep all records fictional.
 
 ## Presentation notes
@@ -60,4 +60,4 @@ set role = excluded.role,
 
 The application checks the employee profile on each protected request. Setting `is_active = false` blocks further application access on the next request. This does not replace revoking sessions in Supabase Auth when immediate token invalidation is required.
 
-**Important current limitation:** the web application's business data layer still uses local SQLite. The Supabase PostgreSQL schema exists, but the Flask queries, payment transactions and demo seed process have not yet been migrated. This app is not ready for real records or operational use.
+**Important current limitation:** the web application's business data layer still uses Supabase PostgreSQL. The Supabase PostgreSQL schema exists, but the Flask queries, payment transactions and demo seed process have not yet been migrated. This app is not ready for real records or operational use.
