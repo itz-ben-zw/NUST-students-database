@@ -189,3 +189,27 @@ def test_try_demo_starts_without_employee_credentials():
     with client.session_transaction() as browser_session:
         assert browser_session.get("demo_mode") is True
         assert "web_session_id" not in browser_session
+
+
+
+def test_demo_student_register_query_is_limited_to_fictional_ids(monkeypatch):
+    captured = {}
+
+    class FakeResult:
+        def fetchall(self):
+            return []
+
+    class FakeDB:
+        def execute(self, query, params=()):
+            captured["query"] = query
+            return FakeResult()
+
+    demo_profile = employee("demo")
+    monkeypatch.setattr(security, "current_employee", lambda: demo_profile)
+    monkeypatch.setattr(web_app, "current_employee", lambda: demo_profile)
+    monkeypatch.setattr(web_app, "get_db", lambda: FakeDB())
+    monkeypatch.setattr(web_app, "invoice_rows", lambda where="", params=(): [])
+
+    response = web_app.app.test_client().get("/students")
+    assert response.status_code == 200
+    assert "s.student_no LIKE 'DEMO26-%'" in captured["query"]
