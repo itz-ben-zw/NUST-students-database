@@ -33,7 +33,27 @@
   <article class="panel payment-history">
     <div class="panel-heading"><div><div class="section-kicker">Access register</div><h2>Staff directory</h2><p class="muted">Active and disabled employee accounts.</p></div></div>
     {% for employee in employees %}
-    <div class="history-row"><span class="history-check">{{ '✓' if employee.is_active else '×' }}</span><span><strong>{{ employee.full_name or employee.email }}</strong><small>{{ employee.email }} · {{ employee.role|replace('_',' ') }}</small></span><form method="post" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_active"><input type="hidden" name="user_id" value="{{ employee.user_id }}"><input type="hidden" name="active" value="{{ 'false' if employee.is_active else 'true' }}"><button class="text-link" type="submit">{{ 'Disable' if employee.is_active else 'Reactivate' }}</button></form></div>
+    <div class="history-row employee-row">
+      <span class="history-check">{{ '✓' if employee.is_active else '×' }}</span>
+      <span class="employee-identity"><strong>{{ employee.full_name or employee.email }}</strong><small>{{ employee.email }}</small><small>{{ 'Active' if employee.is_active else 'Disabled' }}</small></span>
+      <form method="post" class="employee-role-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="change_role">
+        <input type="hidden" name="user_id" value="{{ employee.user_id }}">
+        <label class="sr-only" for="role-{{ loop.index }}">Role for {{ employee.email }}</label>
+        <select id="role-{{ loop.index }}" name="role">
+          {% for value,label in [('system_admin','System administrator'),('finance_manager','Finance manager'),('finance','Finance (legacy)'),('accountant','Accountant'),('payments_clerk','Cashier / payments clerk'),('student_records','Student records officer'),('auditor','Auditor')] %}
+          <option value="{{ value }}" {% if employee.role == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button class="text-link" type="submit">Save role</button>
+      </form>
+      <form method="post" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_active">
+        <input type="hidden" name="user_id" value="{{ employee.user_id }}"><input type="hidden" name="active" value="{{ 'false' if employee.is_active else 'true' }}">
+        <button class="text-link" type="submit">{{ 'Disable' if employee.is_active else 'Reactivate' }}</button>
+      </form>
+    </div>
     {% else %}<p class="muted">No employee profiles have been provisioned yet.</p>{% endfor %}
   </article>
 </section>
