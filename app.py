@@ -138,22 +138,23 @@ def connect_db():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL must point to the Supabase PostgreSQL database.")
 
-    # Render/Supabase connection strings are sometimes supplied without an
-    # explicit sslmode query parameter. Enforce TLS by default rather than
-    # taking the whole site down on the first database-backed page request.
-    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
-
-    parts = urlsplit(DATABASE_URL)
-    query = parse_qsl(parts.query, keep_blank_values=True)
-    sslmode = next((value for key, value in query if key.lower() == "sslmode"), None)
-    if sslmode is None:
-        query.append(("sslmode", "require"))
-    elif sslmode.lower() in {"disable", "allow", "prefer"}:
+    # Inspect only the query component without urlsplit(). Supabase passwords
+    # may contain bracket characters that make urllib's authority parser fail.
+    # libpq accepts sslmode as a separate keyword and preserves URI credentials.
+    query_string = DATABASE_URL.partition("?")[2]
+    query_items = [item.split("=", 1) for item in query_string.split("&") if item]
+    sslmode = next(
+        (pair[1] if len(pair) == 2 else "" for pair in query_items
+         if pair[0].lower() == "sslmode"),
+        None,
+    )
+    if sslmode is not None and sslmode.lower() in {"disable", "allow", "prefer"}:
         raise RuntimeError("DATABASE_URL must use sslmode=require, verify-ca or verify-full.")
-    database_url = urlunsplit(parts._replace(query=urlencode(query)))
 
-    return psycopg.connect(database_url, row_factory=dict_row,
-                           prepare_threshold=None, connect_timeout=10)
+    connect_options = {} if sslmode is not None else {"sslmode": "require"}
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row,
+                           prepare_threshold=None, connect_timeout=10,
+                           **connect_options)
 
 
 def get_db():
