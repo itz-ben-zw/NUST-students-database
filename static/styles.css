@@ -609,3 +609,69 @@ body{font-family:var(--font);font-size:14px;letter-spacing:0}
 .public-heritage .heritage-copy>p:not(.public-eyebrow){margin:20px 0 0}
 .public-heritage .heritage-rule{justify-content:flex-start}
 @media(max-width:700px){.public-heritage{grid-template-columns:1fr;gap:24px;margin:35px auto 0;padding:18px;text-align:left}.public-heritage .heritage-image-wrap{aspect-ratio:4/3}.public-heritage .heritage-image-wrap img{min-height:220px}.public-heritage .heritage-copy{max-width:none}.public-heritage .heritage-copy h2{font-size:36px}.public-heritage .heritage-rule{justify-content:flex-start}}
+
+
+/* Unified Student Accounts palette: deep teal, forest and sage */
+:root{
+  --paper:#f3f7f4;
+  --white:#ffffff;
+  --ink:#173e38;
+  --ink-2:#24574b;
+  --muted:#71847b;
+  --line:#dce8e0;
+  --green:#2f8065;
+  --green-soft:#e5f1e9;
+  --amber:#bd8245;
+  --amber-soft:#f7eee2;
+  --coral:#c97868;
+  --shadow:0 12px 34px rgba(23,62,56,.055);
+}
+body:not(.public-site){background:#f3f7f4;color:#173e38}
+.sidebar{background:#eaf1ec;border-right-color:#dce8e0}
+.brand-mark{background:#173e38;color:#b8dfc6}
+.brand-copy strong{color:#173e38}
+.nav-label,.section-kicker,.eyebrow{color:#82968b}
+.nav-link{color:#61796e}
+.nav-link:hover{background:#dfeae2;color:#173e38}
+.nav-link.active{background:#d9e9df;color:#17483c}
+.nav-icon,.nav-link.active .nav-icon{color:#347b61}
+.term-card{background:rgba(255,255,255,.55);border-color:#d8e5dc}
+.profile{border-top-color:#d8e5dc}
+.topbar{border-bottom-color:#dce8e0}
+.crumb{color:#788a80}
+.crumb b,.page-heading h1{color:#173e38}
+.button.primary{background:#17473e;color:#fff}
+.button.primary:hover{background:#226451}
+.button.primary>span{color:#b8dfc6}
+.button.subtle-button{background:#fff;border-color:#dce8e0;color:#315b4c}
+.panel,.metric-card,.receipt-paper{background:#fff;border-color:#dfe9e2;box-shadow:0 10px 30px rgba(23,62,56,.045)}
+.metric-card.metric-ink{background:#17473e;border-color:#17473e}
+.metric-rule{background:linear-gradient(90deg,#a8d6b8 0 42%,#2f8065 42%)}
+.metric-icon{border-color:#dce8e0;color:#537a68}
+.green-icon{background:#e5f1e9;border-color:#e5f1e9;color:#2f8065}
+.nav-count,.subtitle,.muted,.panel-subtitle{color:#7b8d83}
+.text-link,.row-actions a{color:#2e765d}
+.text-link:hover,.row-actions a:hover{color:#17473e}
+.search-control,.search-form,.field input,.field select,.field textarea,
+input,select,textarea{border-color:#d7e4dc}
+.search-control:focus-within,.field input:focus,.field select:focus,
+.field textarea:focus,input:focus,select:focus,textarea:focus{
+  border-color:#5b9a7c;box-shadow:0 0 0 3px rgba(75,145,111,.12);outline:0
+}
+.table-wrap table thead th{background:#f0f5f1;color:#71867a;border-bottom-color:#dce8e0}
+.table-wrap table td{border-bottom-color:#e8efe9}
+.table-wrap table tbody tr:hover{background:#f6faf7}
+.status-chip.paid{background:#e5f2e9;color:#28734f}
+.status-chip.partial{background:#f8f0df;color:#936a2f}
+.status-chip.owing,.status-chip.unpaid{background:#f7e9e5;color:#a65d4e}
+.progress-track,.faculty-progress-track,.report-bar{background:#e7efe9}
+.progress-fill,.faculty-progress-track span,.report-bar i{background:#4b9672}
+.student-initial,.history-check,.recent-payment-icon{background:#e5f1e9;color:#2f765b}
+.receipt-ready{background:#e8f3eb;border-color:#d4e7da;color:#245b45}
+.demo-entry{background:#edf4ef;border-color:#dce9e0}
+.flash,.alert{border-color:#dce8e0}
+.project-notice{background:#173e38;color:#e7f1ea}
+.project-notice strong{color:#b8dfc6}
+@media(prefers-reduced-motion:no-preference){
+  .nav-link,.button,.text-link{transition:background-color .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+}
