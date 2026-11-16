@@ -159,3 +159,33 @@ def test_mixed_currency_invoice_rejects_overpayment_in_selected_currency():
         assert "outstanding balance" in str(exc)
     else:
         raise AssertionError("USD payment must not consume the ZWG balance.")
+
+
+
+def test_demo_session_is_a_distinct_read_only_identity():
+    from flask import session
+
+    with web_app.app.test_request_context("/"):
+        session["demo_mode"] = True
+        profile = security.current_employee()
+        assert profile["role"] == "demo"
+        assert profile["user_id"] == "read-only-demo"
+
+
+def test_demo_session_cannot_post_a_payment():
+    web_app.app.config["WTF_CSRF_ENABLED"] = False
+    client = web_app.app.test_client()
+    with client.session_transaction() as browser_session:
+        browser_session["demo_mode"] = True
+    response = client.post("/payments", data={"student_id": "1", "amount": "1.00"})
+    assert response.status_code == 403
+
+
+def test_try_demo_starts_without_employee_credentials():
+    web_app.app.config["WTF_CSRF_ENABLED"] = False
+    client = web_app.app.test_client()
+    response = client.post("/try-demo")
+    assert response.status_code == 302
+    with client.session_transaction() as browser_session:
+        assert browser_session.get("demo_mode") is True
+        assert "web_session_id" not in browser_session
