@@ -179,7 +179,8 @@ def close_db(_error=None):
 
 
 def money(cents, currency="USD"):
-    return f"{currency} {cents / 100:,.2f}"
+    symbol = "$" if currency == "USD" else currency
+    return f"{symbol} {cents / 100:,.2f}"
 
 
 app.jinja_env.filters["money"] = money
