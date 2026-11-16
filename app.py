@@ -57,6 +57,12 @@ def public_preview():
     """Public, read-only showcase populated only with fictional static examples."""
     return render_template("preview.html")
 
+@app.get("/terms")
+def terms_of_use():
+    """Public terms for using the independent student finance demonstration."""
+    return render_template("terms.html")
+
+
 
 @app.post("/try-demo")
 def try_demo():
