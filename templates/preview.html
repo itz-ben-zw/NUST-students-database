@@ -11,7 +11,7 @@
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-mobile-nav-sage">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-unslopped">
   <title>Student Accounts | A clearer view of campus finance</title>
 </head>
 <body class="public-site">
@@ -27,20 +27,20 @@
     </nav>
     <div class="public-nav-actions">
       <a class="public-signin" href="{{ url_for('login') }}">Employee sign in</a>
-      <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-dark" type="submit">Explore demo <span aria-hidden="true">↗</span></button></form>
+      <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-dark" type="submit">Open the demo <span aria-hidden="true">↗</span></button></form>
     </div>
   </header>
 
   <section class="public-hero public-hero-photo">
     <div class="public-hero-copy">
-      <p class="public-eyebrow"><span></span> A considered approach to campus finance</p>
-      <h1>Clarity for every<br><em>account.</em></h1>
-      <p class="public-hero-lede">A focused workspace concept for bringing student accounts, fee records and payment activity into one more understandable view.</p>
+      <p class="public-eyebrow"><span></span> Student finance workspace concept</p>
+      <h1>Student finance,<br><em>brought into focus.</em></h1>
+      <p class="public-hero-lede">A university finance workspace concept for following student accounts, fee invoices and payments from one connected place.</p>
       <div class="public-hero-actions">
         <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-green" type="submit">Explore the demo <span aria-hidden="true">↗</span></button></form>
         <a class="public-text-link" href="#platform">See the platform <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="public-proof"><span class="public-proof-mark">◎</span><span>Designed around clearer workflows, careful access and useful information.</span></div>
+      <div class="public-proof"><span class="public-proof-mark">◎</span><span>Designed around traceable records, clear balances and careful access.</span></div>
     </div>
     <div class="public-hero-foot"><span>STUDENT ACCOUNTS · FINANCE WORKSPACE</span><span>INDEPENDENT PROJECT / 2026</span></div>
   </section>
@@ -54,40 +54,40 @@
     </div>
     <div class="heritage-copy">
       <p class="public-eyebrow">THE DETAIL MATTERS</p>
-      <h2>Trust begins<br>with <em>what you can see.</em></h2>
-      <p>An engraved portrait meets a modern data language: a visual reminder that financial records deserve precision, context and careful handling.</p>
+      <h2>Every figure has<br><em>a story behind it.</em></h2>
+      <p>Financial information is only useful when its context is clear. This project brings account history, invoice details and payment activity into view without losing the record behind the number.</p>
       <div class="heritage-rule"><span></span><small>PRECISION IN EVERY RECORD</small></div>
     </div>
   </section>
 
   <section class="public-intro" id="platform">
-    <div><p class="public-eyebrow">THE PLATFORM</p><h2>Less searching.<br><em>More understanding.</em></h2></div>
-    <p>Finance workflows depend on information being organised, traceable and easy to interpret. This project explores a calmer interface for the everyday work behind student accounts.</p>
+    <div><p class="public-eyebrow">THE PLATFORM</p><h2>From account to<br><em>reconciliation.</em></h2></div>
+    <p>Follow the everyday finance journey: review a student account, understand what has been billed, trace payments and bring the totals together in reports.</p>
   </section>
 
   <section class="public-showcase">
     <div class="showcase-copy">
-      <p class="public-eyebrow">A WORKSPACE, NOT A SPREADSHEET</p>
-      <h2>Everything has<br>a clearer place.</h2>
-      <p>Move between student account views, invoice details, payment records and faculty-level reporting without losing the context around the work.</p>
+      <p class="public-eyebrow">A CONNECTED RECORD</p>
+      <h2>See the detail.<br>Keep the context.</h2>
+      <p>Account balances, invoice references and payment entries belong to the same story. The workspace is designed to make those connections easier to follow.</p>
       <a class="public-text-link" href="{{ url_for('login') }}">Employee access <span aria-hidden="true">↗</span></a>
     </div>
     <div class="showcase-window" aria-label="Illustrative dashboard interface preview">
-      <div class="showcase-window-bar"><span class="showcase-logo">SA</span><span>Workspace preview</span><span class="showcase-window-menu">•••</span></div>
+      <div class="showcase-window-bar"><span class="showcase-logo">SA</span><span>Workspace preview</span><span class="showcase-sample-tag">SAMPLE DATA</span></div>
       <div class="showcase-body">
-        <aside class="showcase-sidebar"><b>OVERVIEW</b><span class="is-current">◫ &nbsp; Dashboard</span><span>▤ &nbsp; Accounts</span><span>▧ &nbsp; Invoices</span><span>↗ &nbsp; Payments</span><span>▥ &nbsp; Reports</span><div class="showcase-sidebar-bottom">ILLUSTRATIVE UI</div></aside>
+        <aside class="showcase-sidebar"><span class="showcase-nav-item is-current">Overview</span><span class="showcase-nav-item">Accounts</span><span class="showcase-nav-item">Invoices</span><span class="showcase-nav-item">Payments</span><span class="showcase-nav-item">Reports</span></aside>
         <div class="showcase-main">
-          <div class="showcase-greeting"><div><small>WORKSPACE / OVERVIEW</small><strong>Good morning</strong></div><span class="showcase-avatar">SA</span></div>
-          <div class="showcase-mini-stats"><div><small>ACCOUNTS</small><b>Overview</b><i>Organised records</i></div><div><small>PAYMENTS</small><b>Activity</b><i>Traceable entries</i></div><div><small>REPORTS</small><b>Insights</b><i>Clear summaries</i></div></div>
-          <div class="showcase-lower"><div class="showcase-chart-panel"><div><b>Collection overview</b><small>Illustrative visual</small></div><div class="showcase-chart"><i style="--h:38%"></i><i style="--h:56%"></i><i style="--h:46%"></i><i style="--h:75%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:70%"></i><i style="--h:96%"></i></div><div class="showcase-chart-labels"><span>W1</span><span>W2</span><span>W3</span><span>W4</span></div></div><div class="showcase-activity"><b>Recent activity</b><div><i></i><span><strong>Account updated</strong><small>Example activity</small></span></div><div><i></i><span><strong>Payment recorded</strong><small>Example activity</small></span></div><div><i></i><span><strong>Report prepared</strong><small>Example activity</small></span></div></div></div>
+          <div class="showcase-greeting"><div><small>FINANCE / ACCOUNT OVERVIEW</small><strong>Account activity</strong></div><span class="showcase-avatar">SA</span></div>
+          <div class="showcase-summary"><div><small>ACCOUNT REFERENCE</small><strong>STU-02481</strong><span>Illustrative student record</span></div><div><small>OUTSTANDING BALANCE</small><strong>$ 420.00</strong><span>Partially paid</span></div></div>
+          <div class="showcase-ledger"><div class="showcase-ledger-heading"><strong>Recent account entries</strong><span>Sample record</span></div><div class="showcase-ledger-row"><span class="ledger-mark">I</span><span><strong>Tuition invoice</strong><small>INV-2026-0142 · 04 Nov 2026</small></span><b>$ 1,200.00</b></div><div class="showcase-ledger-row"><span class="ledger-mark">P</span><span><strong>Payment received</strong><small>PAY-2026-0088 · 09 Nov 2026</small></span><b>− $ 780.00</b></div></div><p class="showcase-data-note">All names, references and amounts shown are illustrative.</p>
         </div>
       </div>
-      <div class="showcase-caption"><span>Product interface concept</span><span>No live records shown</span></div>
+      <div class="showcase-caption"><span>Illustrative interface</span><span>Contains no live student records</span></div>
     </div>
   </section>
 
   <section class="public-capabilities" id="capabilities">
-    <div class="capabilities-heading"><div><p class="public-eyebrow">BUILT AROUND THE WORK</p><h2>Useful by design.</h2></div><p>A small set of connected tools, designed to make common finance tasks easier to follow.</p></div>
+    <div class="capabilities-heading"><div><p class="public-eyebrow">THE WORK IT SUPPORTS</p><h2>Four parts of<br>one finance record.</h2></div><p>Each area has a distinct job, while keeping the information connected.</p></div>
     <div class="capability-grid">
       <article><span class="capability-icon">▤</span><small>01 / RECORDS</small><h3>Student accounts</h3><p>Keep account information structured and accessible to the right people.</p></article>
       <article><span class="capability-icon">▧</span><small>02 / BILLING</small><h3>Invoices & fees</h3><p>Bring fee items, invoice history and outstanding balances into context.</p></article>
@@ -97,12 +97,12 @@
   </section>
 
   <section class="public-access" id="about">
-    <div><p class="public-eyebrow">TAKE A CLOSER LOOK</p><h2>Step inside the<br>workspace.</h2><p>Explore the read-only demonstration or continue to the employee sign-in page.</p></div>
+    <div><p class="public-eyebrow">TAKE A CLOSER LOOK</p><h2>Take a closer<br>look at the workflow.</h2><p>Enter the read-only demonstration to explore the interface using sample data.</p></div>
     <div class="public-access-actions">
       <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-light" type="submit">Explore demo <span aria-hidden="true">↗</span></button></form>
       <a class="public-access-secondary" href="{{ url_for('login') }}">Employee sign in <span aria-hidden="true">→</span></a>
     </div>
-    <div class="access-decoration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    
   </section>
 
   <footer class="public-footer">
@@ -110,17 +110,6 @@
     <div class="public-footer-bottom"><span>© 2026 Student Accounts. All rights reserved.</span><span>Independent academic project · Not an official NUST service</span></div>
   </footer>
 </main>
-<script>
-(() => {
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion || !('IntersectionObserver' in window)) return;
-  const targets = document.querySelectorAll('.capability-grid article, .public-intro, .public-showcase');
-  targets.forEach((el, index) => { el.classList.add('reveal-ready'); el.style.setProperty('--reveal-delay', (index % 4) * 75 + 'ms'); });
-  const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-    if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
-  }), { threshold: 0.12 });
-  targets.forEach(el => observer.observe(el));
-})();
-</script>
+
 </body>
 </html>
