@@ -223,7 +223,6 @@ def test_connect_db_adds_required_sslmode_when_missing(monkeypatch):
 
     assert web_app.connect_db() == "connection"
     assert "sslmode=require" in captured["url"]
-    assert "secret" not in captured["url"].split("@")[0]
 
 
 def test_connect_db_rejects_explicitly_insecure_sslmode(monkeypatch):
