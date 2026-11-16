@@ -888,3 +888,8 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .footer-socials svg{width:14px;height:14px;fill:currentColor}
 .footer-socials a:focus-visible{outline:2px solid #5b9a7c;outline-offset:3px}
 @media(max-width:560px){.site-footer{gap:8px}.site-footer .footer-note{display:none}.footer-socials{width:100%;margin:5px 0 0;gap:12px}.footer-socials a{width:32px;height:32px}.footer-socials svg{width:15px;height:15px}}
+
+
+/* Give the capabilities panel and demo call-to-action their own breathing room */
+.public-access{margin-top:48px}
+@media(max-width:700px){.public-access{margin-top:28px}}
