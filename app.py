@@ -310,9 +310,11 @@ def students():
 @roles_required("system_admin", "finance", "auditor", "demo")
 def invoices_page():
     q = request.args.get("q", "").strip()
-    where, params = "", ()
+    demo_mode = current_employee().get("role") == "demo"
+    where, params = ("WHERE s.student_no LIKE 'DEMO26-%'" if demo_mode else ""), ()
     if q:
-        where = "WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s"
+        search_clause = "(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s)"
+        where = (where + " AND " if where else "WHERE ") + search_clause
         params = (f"%{q}%",) * 3
     invoices = decorate_invoices(invoice_rows(where, params))
     outstanding_by_currency = {}
@@ -433,7 +435,7 @@ def payments():
       JOIN programmes p ON p.id=s.programme_id
       JOIN invoices i ON i.student_id=s.id AND i.status!='Void'
       JOIN invoice_lines il ON il.invoice_id=i.id
-      WHERE s.status!='Deferred'
+      WHERE s.status!='Deferred' AND (%s = false OR s.student_no LIKE %s)
       GROUP BY s.id,s.student_no,s.first_name,s.last_name,p.name,il.currency
       HAVING SUM(il.amount_cents)-COALESCE((
           SELECT SUM(pa.amount_cents)
@@ -447,11 +449,15 @@ def payments():
             )
         ),0) > 0
       ORDER BY s.last_name,s.first_name,il.currency
-    """).fetchall()
+    """, (current_employee().get("role") == "demo",
+           "DEMO26-%" if current_employee().get("role") == "demo" else "%")).fetchall()
     recent = db.execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no
-      FROM payments p JOIN students s ON s.id=p.student_id ORDER BY p.paid_on DESC,p.id DESC
-    """).fetchall()
+      FROM payments p JOIN students s ON s.id=p.student_id
+      WHERE (%s = false OR p.receipt_no LIKE %s)
+      ORDER BY p.paid_on DESC,p.id DESC
+    """, (current_employee().get("role") == "demo",
+          "DEMO-RCP-%" if current_employee().get("role") == "demo" else "%")).fetchall()
     selected = request.args.get("receipt")
     receipt = next((row for row in recent if row["receipt_no"] == selected), None)
     selected_student_id = request.args.get("student_id", type=int)
@@ -464,7 +470,8 @@ def payments():
 @app.route("/reports")
 @roles_required("system_admin", "finance", "auditor", "demo")
 def reports():
-    rows = decorate_invoices(invoice_rows())
+    demo_scope = "WHERE s.student_no LIKE 'DEMO26-%'" if current_employee().get("role") == "demo" else ""
+    rows = decorate_invoices(invoice_rows(demo_scope))
     totals = {}
     for row in rows:
         item = totals.setdefault(row["currency"], {"billed": 0, "paid": 0, "balance": 0})
@@ -489,7 +496,9 @@ def receipt_page(receipt_no):
       FROM payments p JOIN students s ON s.id=p.student_id
       JOIN programmes pr ON pr.id=s.programme_id JOIN faculties f ON f.id=pr.faculty_id
       WHERE p.receipt_no=%s
-    """, (receipt_no,)).fetchone()
+        AND (%s = false OR p.receipt_no LIKE %s)
+    """, (receipt_no, current_employee().get("role") == "demo",
+          "DEMO-RCP-%" if current_employee().get("role") == "demo" else "%")).fetchone()
     if row is None:
         abort(404)
     return render_template("receipt.html", receipt=row)
