@@ -11,11 +11,10 @@
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-live-showcase">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-capabilities-hero">
   <title>Student Accounts | A clearer view of campus finance</title>
 </head>
 <body class="public-site">
-<div class="project-notice"><strong>Independent academic project</strong><span>Not an official NUST system · No real student or payment data</span></div>
 <main class="public-shell">
   <header class="public-nav">
     <a class="public-brand" href="{{ url_for('public_preview') }}" aria-label="Student Accounts home">
@@ -54,7 +53,7 @@
       <p class="public-eyebrow">THE DETAIL MATTERS</p>
       <h2>Every figure has<br><em>a story behind it.</em></h2>
       <p>Financial information is only useful when its context is clear. This project brings account history, invoice details and payment activity into view without losing the record behind the number.</p>
-      <div class="heritage-rule"><span></span><small>PRECISION IN EVERY RECORD</small></div>
+      
     </div>
   </section>
 
@@ -71,7 +70,7 @@
     <div class="finance-demo">
       <div class="finance-demo-top">
         <div class="finance-demo-brand"><span class="finance-demo-mark">SA</span><span><strong>Student accounts</strong><small>Finance overview</small></span></div>
-        <span class="finance-demo-period">2026 ACADEMIC YEAR <i></i> SAMPLE DATA</span>
+        
       </div>
       <div class="finance-metrics">
         <article><span>Total billed</span><strong>$ 248,600</strong><small>Across illustrative accounts</small><i class="metric-spark spark-one"></i></article>
@@ -97,7 +96,7 @@
           </div>
           <div class="chart-footnote"><span><i></i>Collection trend</span><strong>+12.8% <small>vs previous period</small></strong></div>
         </article>
-        <article class="finance-panel faculty-panel">
+        <article class="finance-panel faculty-panel" hidden>
           <div class="finance-panel-heading"><div><span>BY FACULTY</span><h3>Payment progress</h3></div><span class="finance-panel-more">•••</span></div>
           <div class="faculty-progress-list">
             <div><div class="faculty-row-label"><span>Engineering</span><strong>82%</strong></div><div class="faculty-track"><i style="width:82%"></i></div><small>$ 64,800 collected</small></div>
@@ -107,27 +106,7 @@
           </div>
         </article>
       </div>
-      <article class="finance-panel student-panel">
-        <div class="finance-panel-heading student-panel-heading"><div><span>ACCOUNT DIRECTORY</span><h3>Find a student account</h3></div><span class="directory-count">5 illustrative records</span></div>
-        <div class="directory-controls">
-          <label class="directory-search"><span aria-hidden="true">⌕</span><input id="student-search" type="search" placeholder="Search by name or student number" aria-label="Search sample student accounts"></label>
-          <div class="directory-filters" role="group" aria-label="Filter accounts by payment status">
-            <button class="directory-filter is-active" type="button" data-filter="all" aria-pressed="true">All <b>5</b></button>
-            <button class="directory-filter" type="button" data-filter="paid" aria-pressed="false">Paid <b>2</b></button>
-            <button class="directory-filter" type="button" data-filter="partial" aria-pressed="false">Partial <b>2</b></button>
-            <button class="directory-filter" type="button" data-filter="owing" aria-pressed="false">Owing <b>1</b></button>
-          </div>
-        </div>
-        <div class="directory-table-wrap"><table class="directory-table"><thead><tr><th>STUDENT</th><th>FACULTY</th><th>AMOUNT DUE</th><th>PAYMENT STATUS</th></tr></thead><tbody id="student-rows">
-          <tr data-status="paid"><td><span class="directory-person"><i>TM</i><span><strong>Tariro Moyo</strong><small>STU-2026-0148</small></span></span></td><td>Engineering</td><td class="directory-amount">$ 0.00</td><td><span class="directory-status status-paid">Paid in full</span></td></tr>
-          <tr data-status="partial"><td><span class="directory-person"><i>KN</i><span><strong>Kudakwashe Ncube</strong><small>STU-2026-0216</small></span></span></td><td>Commerce</td><td class="directory-amount">$ 420.00</td><td><span class="directory-status status-partial">Partially paid</span></td></tr>
-          <tr data-status="owing"><td><span class="directory-person"><i>RM</i><span><strong>Rumbidzai Mlambo</strong><small>STU-2026-0332</small></span></span></td><td>Applied Sciences</td><td class="directory-amount">$ 1,200.00</td><td><span class="directory-status status-owing">Payment due</span></td></tr>
-          <tr data-status="paid"><td><span class="directory-person"><i>TN</i><span><strong>Tendai Ndlovu</strong><small>STU-2026-0407</small></span></span></td><td>Built Environment</td><td class="directory-amount">$ 0.00</td><td><span class="directory-status status-paid">Paid in full</span></td></tr>
-          <tr data-status="partial"><td><span class="directory-person"><i>CM</i><span><strong>Chipo Muchengeti</strong><small>STU-2026-0521</small></span></span></td><td>Engineering</td><td class="directory-amount">$ 275.00</td><td><span class="directory-status status-partial">Partially paid</span></td></tr>
-        </tbody></table><p class="directory-empty" id="directory-empty" hidden>No matching sample accounts. Try another search or filter.</p></div>
-        <div class="directory-footer"><span>Showing illustrative records only</span><span>Account details stay connected <b>↗</b></span></div>
-      </article>
-      <div class="finance-demo-disclaimer"><span><i></i> DEMONSTRATION DATA</span><span>All names, figures and account references are fictional.</span></div>
+      <div class="finance-demo-disclaimer"><span><i></i> CONCEPTUAL PREVIEW</span><span>Illustrative figures, not live university data.</span></div>
     </div>
   </section>
 
@@ -158,33 +137,63 @@
 
 <script>
 (() => {
-  const search = document.getElementById('student-search');
-  const rows = Array.from(document.querySelectorAll('#student-rows tr'));
-  const filters = Array.from(document.querySelectorAll('.directory-filter'));
-  const empty = document.getElementById('directory-empty');
-  if (!search || !rows.length) return;
-  let active = 'all';
-  const update = () => {
-    const term = search.value.trim().toLowerCase();
-    let visible = 0;
-    rows.forEach(row => {
-      const matchesStatus = active === 'all' || row.dataset.status === active;
-      const matchesText = row.textContent.toLowerCase().includes(term);
-      row.hidden = !(matchesStatus && matchesText);
-      if (!row.hidden) visible++;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealTargets = document.querySelectorAll('.finance-demo, .capabilities-heading, .capability-grid article');
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    revealTargets.forEach(el => el.classList.add('is-visible'));
+  } else {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -35px 0px' });
+    revealTargets.forEach(el => observer.observe(el));
+  }
+  const demo = document.querySelector('.finance-demo');
+  if (!demo || reduceMotion) return;
+  const countUp = () => {
+    demo.querySelectorAll('.finance-metrics article strong').forEach((node, index) => {
+      const raw = node.textContent.trim();
+      const target = Number(raw.replace(/[^0-9.]/g, ''));
+      if (!Number.isFinite(target)) return;
+      const prefix = raw.startsWith('$') ? '$ ' : '';
+      const suffix = raw.endsWith('%') ? '%' : '';
+      const decimals = raw.includes('.') ? 2 : 0;
+      const duration = 1050;
+      const start = performance.now();
+      const tick = now => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = target * eased;
+        node.textContent = prefix + (decimals ? value.toFixed(decimals) : Math.round(value).toLocaleString('en-US')) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      node.textContent = prefix + (decimals ? '0.00' : '0') + suffix;
+      window.setTimeout(() => requestAnimationFrame(tick), index * 110);
     });
-    empty.hidden = visible !== 0;
+    const line = demo.querySelector('.chart-line');
+    const area = demo.querySelector('.chart-area');
+    [line, area].forEach(path => {
+      if (!path) return;
+      const length = path.getTotalLength();
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = length;
+      requestAnimationFrame(() => {
+        path.style.transition = 'stroke-dashoffset 1.7s cubic-bezier(.2,.7,.2,1)';
+        path.style.strokeDashoffset = '0';
+      });
+    });
   };
-  search.addEventListener('input', update);
-  filters.forEach(button => button.addEventListener('click', () => {
-    active = button.dataset.filter;
-    filters.forEach(item => {
-      const selected = item === button;
-      item.classList.toggle('is-active', selected);
-      item.setAttribute('aria-pressed', String(selected));
-    });
-    update();
-  }));
+  const chartObserver = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      countUp();
+      chartObserver.disconnect();
+    }
+  }, { threshold: 0.25 });
+  chartObserver.observe(demo);
 })();
 </script>
 </body>
