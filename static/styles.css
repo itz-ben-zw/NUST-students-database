@@ -917,3 +917,12 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .terms-back-link{display:inline-block;margin-top:18px;color:#27634d;font-size:12px;font-weight:700;text-decoration:none}
 .terms-back-link:hover{text-decoration:underline}
 @media(max-width:700px){.terms-page{padding:25px 0 45px}.terms-content{font-size:12px}.footer-terms-link{margin:5px 0;font-size:9px}}
+
+
+/* Authentication choices */
+.google-signin{position:relative;background:#fff!important;color:#283b32!important;border:1px solid #dfe5df!important;box-shadow:0 2px 7px rgba(24,60,53,.04);font-weight:700}
+.google-signin:hover{background:#f8faf8!important;border-color:#bfcfc3!important}
+.google-mark{position:absolute;left:15px;font:800 17px Arial,sans-serif;background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75%);color:transparent;background-clip:text;-webkit-background-clip:text}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:19px 0 0;color:#9aa49c;font-size:9px}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;flex:1;background:#e9ebe5}
+.auth-divider+form.payment-form{margin-top:17px}
