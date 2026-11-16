@@ -212,4 +212,4 @@ def test_demo_student_register_query_is_limited_to_fictional_ids(monkeypatch):
 
     response = web_app.app.test_client().get("/students")
     assert response.status_code == 200
-    assert "s.student_no LIKE 'DEMO26-%'" in captured["query"]
+    assert "left(s.student_no, 7) = 'DEMO26-'" in captured["query"]
