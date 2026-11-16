@@ -675,3 +675,32 @@ input,select,textarea{border-color:#d7e4dc}
 @media(prefers-reduced-motion:no-preference){
   .nav-link,.button,.text-link{transition:background-color .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
 }
+
+
+/* Footer palette correction: remove legacy blue footer overrides */
+.site-footer,
+.preview-footer,
+.preview-footer-bottom,
+.table-panel-footer,
+.public-footer,
+.public-footer-bottom,
+.preview-register-footer{
+  color:#71847b!important;
+  border-color:#dce8e0!important;
+}
+.site-footer>span:first-child,
+.preview-footer-mark{
+  color:#245b4b!important;
+  border-color:#c9ddd0!important;
+  background:#e5f1e9!important;
+}
+.site-footer i{color:#a8b9ad!important}
+.preview-footer-brand strong{color:#173e38!important}
+.preview-footer-brand small{color:#71847b!important}
+.preview-footer-links a,
+.public-footer-links a,
+.preview-register-footer .text-link{
+  color:#2e765d!important;
+}
+.preview-footer-bottom{border-top-color:#dce8e0!important}
+.table-panel-footer{border-color:#dce8e0!important}
