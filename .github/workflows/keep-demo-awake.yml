@@ -1,0 +1,19 @@
+name: Keep the public demo warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Wake and check the Render service
+        run: |
+          curl --fail --silent --show-error --retry 2 --retry-delay 5 --max-time 90 \
+            https://nust-student-accounts-demo.onrender.com/healthz

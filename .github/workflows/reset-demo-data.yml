@@ -1,0 +1,32 @@
+name: Reset fictional demo data
+
+on:
+  schedule:
+    - cron: "17 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reset-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DEMO_DATABASE_URL: ${{ secrets.DEMO_DATABASE_URL }}
+      RESET_DEMO_DATA: "true"
+      ALLOW_DEMO_SEED: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install database dependency
+        run: pip install "psycopg[binary]>=3.2,<4"
+      - name: Reset and reseed isolated demo database
+        run: |
+          if [ -z "$DEMO_DATABASE_URL" ]; then
+            echo "Skipping: configure the DEMO_DATABASE_URL repository secret for the isolated demo database."
+            exit 0
+          fi
+          python scripts/reset_demo_data.py

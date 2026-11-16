@@ -146,6 +146,9 @@ def current_employee() -> dict | None:
     if "employee" in g:
         return g.employee
     g.employee = None
+    if session.get("demo_mode") is True:
+        g.employee = {"user_id": "read-only-demo", "email": "demo@independent-project.invalid", "full_name": "Read-only demo", "role": "demo", "is_active": True}
+        return g.employee
     opaque_id = session.get("web_session_id")
     if not opaque_id:
         return None
