@@ -322,6 +322,8 @@ def dashboard():
         return redirect(url_for("public_preview"))
     if employee.get("role") not in {"system_admin", "finance_manager", "finance", "accountant", "payments_clerk", "student_records", "auditor", "demo"}:
         abort(403)
+    if employee.get("role") == "payments_clerk":
+        return redirect(url_for("payments"))
     demo_mode = employee.get("role") == "demo"
     invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if demo_mode else ""
     invoices = decorate_invoices(invoice_rows(
