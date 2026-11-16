@@ -417,6 +417,19 @@ def set_employee_role(user_id: str, role: str, actor_id: str) -> None:
 def set_employee_active(user_id: str, active: bool, actor_id: str) -> None:
     if not _config_ready():
         raise AuthenticationUnavailable("Employee management has not been configured.")
+    if not active:
+        target = get_employee_profile(user_id)
+        if target and target.get("role") == "system_admin":
+            headers_check = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                             "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"}
+            admins = requests.get(
+                f"{SUPABASE_URL}/rest/v1/employee_profiles",
+                params={"select":"user_id", "role":"eq.system_admin", "is_active":"eq.true"},
+                headers=headers_check, timeout=12,
+            )
+            admins.raise_for_status()
+            if len(admins.json()) <= 1:
+                raise ValueError("The last active system administrator cannot be disabled.")
     headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
                "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
                "Content-Type": "application/json", "Prefer": "return=representation"}
