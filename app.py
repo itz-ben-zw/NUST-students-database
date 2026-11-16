@@ -283,7 +283,7 @@ def dashboard():
                              "currency": currency})
     return render_template("dashboard.html", invoices=invoices, recent=recent, due=all_due[:4],
                            due_count=len(all_due), faculties=faculty_rows,
-                           currency_totals=list(currency_totals.values()))
+                           currency_totals=currency_totals)
 
 
 @app.route("/students")
