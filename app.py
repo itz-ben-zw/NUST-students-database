@@ -298,7 +298,7 @@ def students():
         student_no: (
             "Paid" if totals["balance"] <= 0
             else "Partial" if totals["paid"] > 0
-            else "Owing"
+            else "Unpaid"
         )
         for student_no, totals in account_totals.items()
     }
@@ -479,7 +479,8 @@ def reports():
         item["paid"] += row["paid"]
         item["balance"] += row["balance"]
     faculty_rows = []
-    for faculty in get_db().execute("SELECT id,name FROM faculties ORDER BY name"):
+    faculty_filter = "WHERE name LIKE '%(Demo)'" if current_employee().get("role") == "demo" else ""
+    for faculty in get_db().execute(f"SELECT id,name FROM faculties {faculty_filter} ORDER BY name"):
         group = [row for row in rows if row["faculty_name"] == faculty["name"]]
         faculty_rows.append({"name": faculty["name"], "students": len(group),
                              "billed": sum(row["billed"] for row in group),
