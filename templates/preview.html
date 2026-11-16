@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  NaN
+  <meta name="description" content="Explore an independent student accounts and finance management demo with fictional sample records. Not an official NUST system.">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="Student Accounts Demo"><meta property="og:title" content="Student Accounts · Independent Demo"><meta property="og:description" content="A read-only showcase of student accounts, invoices, collections and payment activity. Fictional data, independent academic project, not an official NUST system."><meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}"><meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <title>Student Accounts · Independent Demo</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -31,7 +34,7 @@
     <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td>15 Sep 2026</td><td><span class="status-chip owing">Unpaid</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
     <tr data-preview-account><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td>15 Oct 2026</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
     <tr data-preview-account><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td>30 Sep 2026</td><td><span class="status-chip owing">Unpaid</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr data-preview-account><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td>15 Oct 2026</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
     <tr data-preview-account><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td>15 Sep 2026</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
   </tbody></table></div><div class="preview-register-footer"><span>Showing 5 of 12 students</span><form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-link" type="submit">View all students →</button></form></div><p class="preview-table-note">All records are fictional. The demo workspace is read-only.</p></section>
   <section class="preview-columns">
@@ -41,7 +44,7 @@
       <div class="preview-faculty"><div><strong>Applied Sciences</strong><small>3 student accounts</small><div class="preview-bar"><i data-progress-fill style="width:0%"></i></div></div><div class="preview-amount"><span data-count-up>0%</span><small>received</small></div></div>
     </article>
     <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Recent payments</h2><p>Latest illustrative transactions.</p></div></div>
-      <div class="preview-receipt"><span><strong>Tawanda Dube</strong><small>Bank transfer · 12 Nov 2026</small></span><b>USD 1,080</b></div>
+      <div class="preview-receipt"><span><strong>Tawanda Dube</strong><small>12 Nov 2026 · DEMO-RCP-2026-0002 · Bank transfer</small></span><b>USD 1,080</b></div>
       <div class="preview-receipt"><span><strong>Rudo Mupfumi</strong><small>08 Nov 2026 · DEMO-RCP-2026-0004 · EcoCash</small></span><b>USD 200</b></div>
       <div class="preview-receipt"><span><strong>Nyasha Ndlovu</strong><small>02 Nov 2026 · DEMO-RCP-2026-0003 · RTGS</small></span><b>USD 400</b></div>
       <div class="preview-receipt"><span><strong>Tariro Moyo</strong><small>15 Oct 2026 · DEMO-RCP-2026-0001 · EcoCash</small></span><b>USD 250</b></div>
