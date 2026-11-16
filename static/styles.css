@@ -900,3 +900,20 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .public-footer-bottom .public-footer-socials a{width:29px;height:29px;border-color:#dce8e0;color:#527565;background:#fff}
 .public-footer-bottom .public-footer-socials a:hover{color:#fff;background:#245b4b;border-color:#245b4b}
 @media(max-width:700px){.public-footer-bottom .public-footer-socials{width:auto;margin:8px 0 0;gap:12px}.public-footer-bottom .public-footer-socials a{width:32px;height:32px}}
+
+
+/* Terms of use page */
+.footer-terms-link{margin-left:12px;color:#71827a;font-size:10px;text-decoration:none}
+.footer-terms-link:hover{text-decoration:underline;color:#245b4b}
+.terms-page{max-width:900px;margin:0 auto;padding:46px 0 70px}
+.terms-heading{padding:28px 0 30px;border-bottom:1px solid #e3eae5}
+.terms-heading .eyebrow{margin:0 0 12px;color:#56816b;font-size:10px;font-weight:800;letter-spacing:.13em}
+.terms-heading h1{margin:0;color:#1d4035;font-size:clamp(34px,5vw,48px);letter-spacing:-.055em}
+.terms-heading>p:last-child{margin:12px 0 0;color:#8a9890;font-size:11px}
+.terms-content{max-width:760px;padding:25px 0;color:#66766d;font-size:13px;line-height:1.9}
+.terms-content h2{margin:28px 0 7px;color:#284b3c;font-size:16px;letter-spacing:-.02em}
+.terms-content p{margin:0 0 13px}
+.terms-content .terms-note{margin-top:30px;padding:14px 16px;border-left:3px solid #8ab39a;background:#f1f6f2;color:#738278;font-size:11px}
+.terms-back-link{display:inline-block;margin-top:18px;color:#27634d;font-size:12px;font-weight:700;text-decoration:none}
+.terms-back-link:hover{text-decoration:underline}
+@media(max-width:700px){.terms-page{padding:25px 0 45px}.terms-content{font-size:12px}.footer-terms-link{margin:5px 0;font-size:9px}}
