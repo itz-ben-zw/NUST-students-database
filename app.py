@@ -234,12 +234,19 @@ def dashboard():
         return redirect(url_for("public_preview"))
     if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor", "demo"}:
         abort(403)
-    invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
+    demo_mode = employee.get("role") == "demo"
+    invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if demo_mode else ""
+    invoices = decorate_invoices(invoice_rows(
+        f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
+    ))
     currency_totals = summarize_financials(invoices)
     db = get_db()
-    recent = db.execute("""
+    recent_scope = "WHERE p.receipt_no LIKE 'DEMO-RCP-%'" if demo_mode else ""
+    recent = db.execute(f"""
       SELECT p.*, s.first_name, s.last_name, s.student_no
-      FROM payments p JOIN students s ON s.id=p.student_id ORDER BY p.paid_on DESC,p.id DESC LIMIT 5
+      FROM payments p JOIN students s ON s.id=p.student_id
+      {recent_scope}
+      ORDER BY p.paid_on DESC,p.id DESC LIMIT 5
     """).fetchall()
     all_due = sorted([row for row in invoices if row["balance"] > 0], key=lambda row: row["balance"], reverse=True)
     faculty_rows = []
@@ -266,12 +273,20 @@ def students():
         (SELECT sp.display_name FROM student_sponsors ss JOIN sponsors sp ON sp.id=ss.sponsor_id WHERE ss.student_id=s.id LIMIT 1) AS sponsor_name
       FROM students s JOIN programmes p ON p.id=s.programme_id JOIN faculties f ON f.id=p.faculty_id
     """
+    filters = []
     params = ()
+    if current_employee().get("role") == "demo":
+        filters.append("left(s.student_no, 7) = 'DEMO26-'")
     if q:
-        sql += " WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s"
+        filters.append("(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s)")
         params = (f"%{q}%",) * 5
+    if filters:
+        sql += " WHERE " + " AND ".join(filters)
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
-    account_invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
+    invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if current_employee().get("role") == "demo" else ""
+    account_invoices = decorate_invoices(invoice_rows(
+        f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
+    ))
     balance_parts = {}
     account_totals = {}
     for row in account_invoices:
@@ -283,7 +298,7 @@ def students():
         student_no: (
             "Paid" if totals["balance"] <= 0
             else "Partial" if totals["paid"] > 0
-            else "Owing"
+            else "Unpaid"
         )
         for student_no, totals in account_totals.items()
     }
@@ -295,9 +310,11 @@ def students():
 @roles_required("system_admin", "finance", "auditor", "demo")
 def invoices_page():
     q = request.args.get("q", "").strip()
-    where, params = "", ()
+    demo_mode = current_employee().get("role") == "demo"
+    where, params = ("WHERE left(s.student_no, 7) = 'DEMO26-'" if demo_mode else ""), ()
     if q:
-        where = "WHERE s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s"
+        search_clause = "(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s)"
+        where = (where + " AND " if where else "WHERE ") + search_clause
         params = (f"%{q}%",) * 3
     invoices = decorate_invoices(invoice_rows(where, params))
     outstanding_by_currency = {}
@@ -418,7 +435,7 @@ def payments():
       JOIN programmes p ON p.id=s.programme_id
       JOIN invoices i ON i.student_id=s.id AND i.status!='Void'
       JOIN invoice_lines il ON il.invoice_id=i.id
-      WHERE s.status!='Deferred'
+      WHERE s.status!='Deferred' AND (%s = false OR s.student_no LIKE %s)
       GROUP BY s.id,s.student_no,s.first_name,s.last_name,p.name,il.currency
       HAVING SUM(il.amount_cents)-COALESCE((
           SELECT SUM(pa.amount_cents)
@@ -432,11 +449,15 @@ def payments():
             )
         ),0) > 0
       ORDER BY s.last_name,s.first_name,il.currency
-    """).fetchall()
+    """, (current_employee().get("role") == "demo",
+           "DEMO26-%" if current_employee().get("role") == "demo" else "%")).fetchall()
     recent = db.execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no
-      FROM payments p JOIN students s ON s.id=p.student_id ORDER BY p.paid_on DESC,p.id DESC
-    """).fetchall()
+      FROM payments p JOIN students s ON s.id=p.student_id
+      WHERE (%s = false OR p.receipt_no LIKE %s)
+      ORDER BY p.paid_on DESC,p.id DESC
+    """, (current_employee().get("role") == "demo",
+          "DEMO-RCP-%" if current_employee().get("role") == "demo" else "%")).fetchall()
     selected = request.args.get("receipt")
     receipt = next((row for row in recent if row["receipt_no"] == selected), None)
     selected_student_id = request.args.get("student_id", type=int)
@@ -449,7 +470,8 @@ def payments():
 @app.route("/reports")
 @roles_required("system_admin", "finance", "auditor", "demo")
 def reports():
-    rows = decorate_invoices(invoice_rows())
+    demo_scope = "WHERE left(s.student_no, 7) = 'DEMO26-'" if current_employee().get("role") == "demo" else ""
+    rows = decorate_invoices(invoice_rows(demo_scope))
     totals = {}
     for row in rows:
         item = totals.setdefault(row["currency"], {"billed": 0, "paid": 0, "balance": 0})
@@ -457,7 +479,8 @@ def reports():
         item["paid"] += row["paid"]
         item["balance"] += row["balance"]
     faculty_rows = []
-    for faculty in get_db().execute("SELECT id,name FROM faculties ORDER BY name"):
+    faculty_filter = "WHERE name LIKE '%(Demo)'" if current_employee().get("role") == "demo" else ""
+    for faculty in get_db().execute(f"SELECT id,name FROM faculties {faculty_filter} ORDER BY name"):
         group = [row for row in rows if row["faculty_name"] == faculty["name"]]
         faculty_rows.append({"name": faculty["name"], "students": len(group),
                              "billed": sum(row["billed"] for row in group),
@@ -474,7 +497,9 @@ def receipt_page(receipt_no):
       FROM payments p JOIN students s ON s.id=p.student_id
       JOIN programmes pr ON pr.id=s.programme_id JOIN faculties f ON f.id=pr.faculty_id
       WHERE p.receipt_no=%s
-    """, (receipt_no,)).fetchone()
+        AND (%s = false OR p.receipt_no LIKE %s)
+    """, (receipt_no, current_employee().get("role") == "demo",
+          "DEMO-RCP-%" if current_employee().get("role") == "demo" else "%")).fetchone()
     if row is None:
         abort(404)
     return render_template("receipt.html", receipt=row)
