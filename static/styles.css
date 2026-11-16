@@ -551,3 +551,28 @@ body{font-family:var(--font);font-size:14px;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){
  .public-button,.art-float,.art-chart-bars i,.reveal-ready,.reveal-ready.is-visible{animation:none;transition:none;transform:none;opacity:1}
 }
+
+
+/* Campus photography and Franklin editorial feature */
+.public-campus-art{min-height:460px;display:block;transform:none!important}
+.campus-photo-frame{position:absolute;inset:12px 12px 28px 20px;overflow:hidden;border-radius:7px;background:#163c43;box-shadow:0 24px 55px rgba(22,55,47,.16)}
+.campus-photo-frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%;filter:saturate(.78)}
+.campus-photo-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,35,42,.02) 35%,rgba(11,35,42,.62) 100%),linear-gradient(90deg,rgba(17,52,47,.12),transparent 65%)}
+.campus-photo-label{position:absolute;right:20px;bottom:18px;left:20px;display:flex;justify-content:space-between;gap:12px;color:#fff;font-size:8px;font-weight:750;letter-spacing:.13em}
+.campus-float-card{position:absolute;left:0;bottom:0;display:flex;align-items:center;gap:11px;padding:13px 17px;border:1px solid rgba(255,255,255,.8);border-radius:6px;background:rgba(255,255,255,.94);box-shadow:0 12px 30px rgba(22,55,47,.13);backdrop-filter:blur(12px)}
+.campus-float-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#e7f1eb;color:#28785e;font-size:18px}
+.campus-float-card>span:last-child{display:grid;gap:4px}
+.campus-float-card strong{color:#21483d;font-size:10px}
+.campus-float-card small{color:#829087;font-size:8px}
+.public-heritage{display:grid;grid-template-columns:.92fr 1.08fr;align-items:center;gap:clamp(35px,7vw,90px);padding:84px 7%;margin:70px 0 10px;border:1px solid #e1eae5;border-radius:10px;background:#edf3ef}
+.heritage-image-wrap{position:relative;min-height:310px;overflow:hidden;border-radius:5px;background:#fff;box-shadow:0 15px 38px rgba(26,59,49,.09)}
+.heritage-image-wrap img{display:block;width:100%;height:310px;object-fit:cover;object-position:center 43%}
+.heritage-image-note{position:absolute;right:12px;bottom:12px;padding:8px 10px;background:rgba(20,67,58,.88);color:#e8f4ed;font-size:7px;font-weight:750;letter-spacing:.13em}
+.heritage-copy h2{margin:0;color:#183d38;font-size:clamp(32px,4vw,48px);line-height:1.08;letter-spacing:-.06em}
+.heritage-copy h2 em{font-family:Georgia,serif;font-weight:400;color:#25836a}
+.heritage-copy>p:not(.public-eyebrow){max-width:420px;margin:20px 0 0;color:#71817a;font-size:13px;line-height:1.9}
+.heritage-rule{display:flex;align-items:center;gap:12px;margin-top:27px}
+.heritage-rule span{width:38px;height:2px;background:#4c9a78}
+.heritage-rule small{color:#8a9a92;font-size:8px;font-weight:800;letter-spacing:.13em}
+@media(max-width:980px){.public-campus-art{min-height:390px}.public-heritage{gap:35px;padding:55px 5%}}
+@media(max-width:700px){.public-campus-art{min-height:340px;margin:5px 0 25px}.campus-photo-frame{inset:8px 6px 24px 12px}.campus-photo-label{right:12px;left:12px;font-size:6px}.campus-float-card{padding:10px 12px}.public-heritage{grid-template-columns:1fr;gap:27px;padding:25px 18px;margin:35px 0 0}.heritage-image-wrap,.heritage-image-wrap img{height:245px;min-height:245px}.heritage-copy h2{font-size:36px}}
