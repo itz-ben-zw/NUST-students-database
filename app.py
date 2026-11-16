@@ -50,6 +50,15 @@ def public_preview():
     return render_template("preview.html")
 
 
+@app.post("/try-demo")
+def try_demo():
+    """Start a short-lived, signed-cookie demo session without an employee account."""
+    session.clear()
+    session.permanent = True
+    session["demo_mode"] = True
+    return redirect(url_for("dashboard"))
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_employee():
@@ -77,7 +86,8 @@ def login():
 @login_required
 def logout():
     try:
-        delete_web_session(session.get("web_session_id"))
+        if session.get("web_session_id"):
+            delete_web_session(session.get("web_session_id"))
     except requests.RequestException:
         app.logger.warning("Could not remove server-side employee session during sign-out.")
     session.clear()
@@ -222,7 +232,7 @@ def dashboard():
     employee = current_employee()
     if employee is None:
         return redirect(url_for("public_preview"))
-    if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor"}:
+    if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor", "demo"}:
         abort(403)
     invoices = decorate_invoices(invoice_rows("WHERE i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"))
     currency_totals = summarize_financials(invoices)
@@ -248,7 +258,7 @@ def dashboard():
 
 
 @app.route("/students")
-@roles_required("system_admin", "student_records", "auditor")
+@roles_required("system_admin", "student_records", "auditor", "demo")
 def students():
     q = request.args.get("q", "").strip()
     sql = """
@@ -282,7 +292,7 @@ def students():
 
 
 @app.route("/invoices")
-@roles_required("system_admin", "finance", "auditor")
+@roles_required("system_admin", "finance", "auditor", "demo")
 def invoices_page():
     q = request.args.get("q", "").strip()
     where, params = "", ()
@@ -300,8 +310,10 @@ def invoices_page():
 
 
 @app.route("/payments", methods=["GET", "POST"])
-@roles_required("system_admin", "finance")
+@roles_required("system_admin", "finance", "demo")
 def payments():
+    if request.method == "POST" and current_employee().get("role") == "demo":
+        abort(403)
     db = get_db()
     if request.method == "POST":
         student_id = request.form.get("student_id", type=int)
