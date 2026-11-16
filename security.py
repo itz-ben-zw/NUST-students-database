@@ -62,12 +62,26 @@ def create_google_pkce_pair() -> tuple[str, str]:
 
 
 def google_authorize_url(redirect_uri: str, challenge: str, state: str) -> str:
-    from urllib.parse import urlencode
+    from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
     if not _config_ready():
         raise AuthenticationUnavailable("Google sign-in has not been configured.")
-    params = urlencode({"provider": "google", "redirect_to": redirect_uri,
-                        "code_challenge": challenge, "code_challenge_method": "s256",
-                        "state": state})
+
+    # Supabase owns the outer OAuth state parameter for its Google callback.
+    # Carry our browser-session state inside redirect_to so Supabase returns it
+    # to this application after the provider flow completes.
+    callback = urlsplit(redirect_uri)
+    callback_query = dict(parse_qsl(callback.query, keep_blank_values=True))
+    callback_query["state"] = state
+    redirect_to = urlunsplit((
+        callback.scheme, callback.netloc, callback.path,
+        urlencode(callback_query), callback.fragment,
+    ))
+    params = urlencode({
+        "provider": "google",
+        "redirect_to": redirect_to,
+        "code_challenge": challenge,
+        "code_challenge_method": "s256",
+    })
     return f"{SUPABASE_URL}/auth/v1/authorize?{params}"
 
 
