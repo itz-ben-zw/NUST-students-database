@@ -34,7 +34,7 @@ csrf = CSRFProtect(app)
 def clear_auth_session():
     """Clear authentication state without invalidating Flask-WTF's CSRF token."""
     csrf_token = session.get("_csrf_token")
-    clear_auth_session()
+    session.clear()
     if csrf_token:
         session["_csrf_token"] = csrf_token
 
