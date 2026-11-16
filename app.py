@@ -235,7 +235,7 @@ def dashboard():
     if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor", "demo"}:
         abort(403)
     demo_mode = employee.get("role") == "demo"
-    invoice_scope = "s.student_no LIKE 'DEMO26-%' AND " if demo_mode else ""
+    invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if demo_mode else ""
     invoices = decorate_invoices(invoice_rows(
         f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
     ))
@@ -276,14 +276,14 @@ def students():
     filters = []
     params = ()
     if current_employee().get("role") == "demo":
-        filters.append("s.student_no LIKE 'DEMO26-%'")
+        filters.append("left(s.student_no, 7) = 'DEMO26-'")
     if q:
         filters.append("(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s)")
         params = (f"%{q}%",) * 5
     if filters:
         sql += " WHERE " + " AND ".join(filters)
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
-    invoice_scope = "s.student_no LIKE 'DEMO26-%' AND " if current_employee().get("role") == "demo" else ""
+    invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if current_employee().get("role") == "demo" else ""
     account_invoices = decorate_invoices(invoice_rows(
         f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
     ))
@@ -311,7 +311,7 @@ def students():
 def invoices_page():
     q = request.args.get("q", "").strip()
     demo_mode = current_employee().get("role") == "demo"
-    where, params = ("WHERE s.student_no LIKE 'DEMO26-%'" if demo_mode else ""), ()
+    where, params = ("WHERE left(s.student_no, 7) = 'DEMO26-'" if demo_mode else ""), ()
     if q:
         search_clause = "(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s)"
         where = (where + " AND " if where else "WHERE ") + search_clause
@@ -470,7 +470,7 @@ def payments():
 @app.route("/reports")
 @roles_required("system_admin", "finance", "auditor", "demo")
 def reports():
-    demo_scope = "WHERE s.student_no LIKE 'DEMO26-%'" if current_employee().get("role") == "demo" else ""
+    demo_scope = "WHERE left(s.student_no, 7) = 'DEMO26-'" if current_employee().get("role") == "demo" else ""
     rows = decorate_invoices(invoice_rows(demo_scope))
     totals = {}
     for row in rows:
