@@ -320,7 +320,7 @@ def list_employee_profiles() -> list[dict]:
 def invite_employee(email: str, full_name: str, role: str, invited_by: str) -> None:
     if not _config_ready():
         raise AuthenticationUnavailable("Employee management has not been configured.")
-    allowed_roles = {"system_admin", "finance", "student_records", "auditor"}
+    allowed_roles = {"system_admin", "finance_manager", "finance", "accountant", "payments_clerk", "student_records", "auditor"}
     if role not in allowed_roles:
         raise ValueError("Choose a valid employee role.")
     if not email.lower().endswith("@nust.ac.zw"):
