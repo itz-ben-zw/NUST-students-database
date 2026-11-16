@@ -810,7 +810,7 @@ input,select,textarea{border-color:#d7e4dc}
 .directory-search input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent;font:inherit;color:#345646;font-size:10px}
 .directory-search input::placeholder{color:#a1ada4}
 .directory-filters{display:flex;align-items:center;gap:4px}
-.directory-filter{display:flex;align-items:center;gap:6px;height:30px;padding:0 9px;border:1px solid transparent;border-radius:5px;background:transparent;color:#718379;font:550 9px inherit;cursor:pointer}
+.directory-filter{display:flex;align-items:center;gap:6px;height:30px;padding:0 9px;border:1px solid transparent;border-radius:5px;background:transparent;color:#718379;font-family:inherit;font-size:9px;font-weight:550;cursor:pointer}
 .directory-filter b{color:#9aa79e;font-size:8px}
 .directory-filter.is-active{background:#eaf2ec;border-color:#dce9df;color:#286348}
 .directory-filter.is-active b{color:#438263}
