@@ -365,6 +365,55 @@ def invite_employee(email: str, full_name: str, role: str, invited_by: str) -> N
     audit.raise_for_status()
 
 
+
+def set_employee_role(user_id: str, role: str, actor_id: str) -> None:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Employee management has not been configured.")
+    allowed_roles = {"system_admin", "finance_manager", "finance", "accountant",
+                     "payments_clerk", "student_records", "auditor"}
+    if role not in allowed_roles:
+        raise ValueError("Choose a valid employee role.")
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+               "Content-Type": "application/json", "Prefer": "return=representation"}
+    current = requests.get(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles",
+        params={"select":"user_id,role", "user_id":f"eq.{user_id}", "limit":"1"},
+        headers=headers, timeout=12,
+    )
+    current.raise_for_status()
+    rows = current.json()
+    if not rows:
+        raise ValueError("Employee profile was not found.")
+    old_role = rows[0]["role"]
+    if old_role == "system_admin" and role != "system_admin":
+        admins = requests.get(
+            f"{SUPABASE_URL}/rest/v1/employee_profiles",
+            params={"select":"user_id", "role":"eq.system_admin", "is_active":"eq.true"},
+            headers=headers, timeout=12,
+        )
+        admins.raise_for_status()
+        if len(admins.json()) <= 1:
+            raise ValueError("The last active system administrator cannot be demoted.")
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles",
+        params={"user_id":f"eq.{user_id}"},
+        headers=headers, json={"role":role}, timeout=12,
+    )
+    response.raise_for_status()
+    if not response.json():
+        raise ValueError("Employee role was not updated.")
+    audit = requests.post(
+        f"{SUPABASE_URL}/rest/v1/audit_logs",
+        headers={**headers, "Prefer":"return=minimal"},
+        json={"actor_user_id":actor_id, "action":"employee.role_changed",
+              "entity_type":"employee_profile", "entity_id":user_id,
+              "details":{"previous_role":old_role, "new_role":role}},
+        timeout=12,
+    )
+    audit.raise_for_status()
+
+
 def set_employee_active(user_id: str, active: bool, actor_id: str) -> None:
     if not _config_ready():
         raise AuthenticationUnavailable("Employee management has not been configured.")
