@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Terms of Use{% endblock %}
+{% block crumb %}Terms of use{% endblock %}
+{% block meta_description %}Terms governing use of the independent Student Accounts academic demonstration.{% endblock %}
+{% block content %}
+<section class="terms-page">
+  <div class="terms-heading"><p class="eyebrow">IMPORTANT INFORMATION</p><h1>Terms of use</h1><p>Last updated: 16 November 2026</p></div>
+  <article class="terms-content">
+    <p>These terms apply when you visit or use the Student Accounts website and its demonstration features. By using the site, you agree to these terms. If you do not agree, please do not use the site.</p>
+    <h2>1. Independent academic project</h2>
+    <p>Student Accounts is an independent academic project and demonstration. It is not an official website, service or system of the National University of Science and Technology (NUST), and it is not endorsed by NUST.</p>
+    <h2>2. Demonstration data</h2>
+    <p>Information shown in the public preview and demonstration may be fictional, illustrative or generated for demonstration purposes. It must not be treated as an actual student account, invoice, payment confirmation, university record or official financial statement.</p>
+    <h2>3. Permitted use</h2>
+    <p>You may explore the site for personal evaluation, learning and demonstration purposes. You must not attempt to gain unauthorised access, interfere with the service, misuse its features, upload unlawful or harmful material, or use the site to mislead others.</p>
+    <h2>4. No financial or institutional reliance</h2>
+    <p>The demonstration does not process or confirm real tuition payments and does not provide official account balances or financial advice. Always contact the relevant university office through its official channels for authoritative information.</p>
+    <h2>5. Availability and changes</h2>
+    <p>The site is provided as an academic demonstration and may be changed, suspended or discontinued without notice. Features and information may be incomplete or unavailable at times.</p>
+    <h2>6. Intellectual property</h2>
+    <p>Unless otherwise indicated, the project's original interface, code and presentation are part of the independent project. Third-party names, marks and materials remain the property of their respective owners. Nothing on this site grants permission to use third-party marks or content.</p>
+    <h2>7. Limitation</h2>
+    <p>To the extent permitted by applicable law, the project and its contributors are not responsible for loss or damage arising from reliance on demonstration information, temporary unavailability, or use of the site. The site is provided without a guarantee that it will be uninterrupted, error-free or suitable for a particular purpose.</p>
+    <h2>8. Contact and questions</h2>
+    <p>For official NUST matters, use NUST's own website and contact channels. These terms relate only to this independent demonstration.</p>
+    <p class="terms-note">These terms are a practical notice for an academic demo, not legal advice or a substitute for a review by a qualified lawyer.</p>
+    <a class="terms-back-link" href="{{ url_for('public_preview') }}">← Back to the public preview</a>
+  </article>
+</section>
+{% endblock %}
