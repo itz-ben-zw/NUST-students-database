@@ -137,9 +137,22 @@ def employee_admin():
 def connect_db():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL must point to the Supabase PostgreSQL database.")
-    if "sslmode=" not in DATABASE_URL:
-        raise RuntimeError("DATABASE_URL must specify sslmode=require or a stronger SSL mode.")
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row,
+
+    # Render/Supabase connection strings are sometimes supplied without an
+    # explicit sslmode query parameter. Enforce TLS by default rather than
+    # taking the whole site down on the first database-backed page request.
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+    parts = urlsplit(DATABASE_URL)
+    query = parse_qsl(parts.query, keep_blank_values=True)
+    sslmode = next((value for key, value in query if key.lower() == "sslmode"), None)
+    if sslmode is None:
+        query.append(("sslmode", "require"))
+    elif sslmode.lower() in {"disable", "allow", "prefer"}:
+        raise RuntimeError("DATABASE_URL must use sslmode=require, verify-ca or verify-full.")
+    database_url = urlunsplit(parts._replace(query=urlencode(query)))
+
+    return psycopg.connect(database_url, row_factory=dict_row,
                            prepare_threshold=None, connect_timeout=10)
 
 
