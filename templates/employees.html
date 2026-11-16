@@ -2,7 +2,7 @@
 {% block title %}Employee access{% endblock %}
 {% block crumb %}Employee access{% endblock %}
 {% block content %}
-<section class="page-heading"><div><div class="eyebrow">System administration</div><h1>Employee access<span class="wave">.</span></h1><p class="subtitle">Invite individually verified staff and assign least-privilege access.</p></div></section>
+<section class="page-heading"><div><div class="eyebrow">System administration</div><h1>Employee access<span class="wave">.</span></h1><p class="subtitle">Manage staff invitations, role assignments and account access.</p></div></section>
 <section class="payment-layout">
   <article class="panel payment-form-panel">
     <div class="panel-heading"><div><div class="section-kicker">New invitation</div><h2>Invite an employee</h2></div></div>
@@ -10,13 +10,28 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="field"><span>Full name</span><input name="full_name" maxlength="120" required></label>
       <label class="field"><span>NUST work email</span><input type="email" name="email" placeholder="employee@nust.ac.zw" required></label>
-      <label class="field"><span>Access role</span><select name="role" required><option value="finance">Finance</option><option value="student_records">Student records</option><option value="auditor">Auditor / management (read-only)</option><option value="system_admin">System administrator</option></select></label>
+      <label class="field"><span>Access role</span><select name="role" required>
+        <option value="finance_manager">Finance manager</option>
+        <option value="accountant">Accountant</option>
+        <option value="payments_clerk">Cashier / payments clerk</option>
+        <option value="student_records">Student records officer</option>
+        <option value="auditor">Auditor (read-only)</option>
+        <option value="system_admin">System administrator</option>
+      </select></label>
+      <div class="role-guidance">
+        <p><strong>Finance manager</strong><span>Full finance workspace access.</span></p>
+        <p><strong>Accountant</strong><span>Invoices, payments and finance reports.</span></p>
+        <p><strong>Cashier / payments clerk</strong><span>Payment entry and payment history only.</span></p>
+        <p><strong>Student records officer</strong><span>Student register and records.</span></p>
+        <p><strong>Auditor</strong><span>Read-only access to records and reports.</span></p>
+        <p><strong>System administrator</strong><span>Employee access and system administration.</span></p>
+      </div>
       <div class="form-note"><span>!</span><p>Verify employment and authority through an independent university channel before sending an invitation. An @nust.ac.zw address alone is not proof of employment.</p></div>
       <button class="button primary full-button" type="submit">Send invitation →</button>
     </form>
   </article>
   <article class="panel payment-history">
-    <div class="panel-heading"><div><div class="section-kicker">Access register</div><h2>Invited employees</h2></div></div>
+    <div class="panel-heading"><div><div class="section-kicker">Access register</div><h2>Staff directory</h2><p class="muted">Active and disabled employee accounts.</p></div></div>
     {% for employee in employees %}
     <div class="history-row"><span class="history-check">{{ '✓' if employee.is_active else '×' }}</span><span><strong>{{ employee.full_name or employee.email }}</strong><small>{{ employee.email }} · {{ employee.role|replace('_',' ') }}</small></span><form method="post" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_active"><input type="hidden" name="user_id" value="{{ employee.user_id }}"><input type="hidden" name="active" value="{{ 'false' if employee.is_active else 'true' }}"><button class="text-link" type="submit">{{ 'Disable' if employee.is_active else 'Reactivate' }}</button></form></div>
     {% else %}<p class="muted">No employee profiles have been provisioned yet.</p>{% endfor %}
