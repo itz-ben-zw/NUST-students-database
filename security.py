@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import hashlib
 import secrets
+import base64
 from datetime import datetime, timezone
 from functools import wraps
 
@@ -14,6 +15,7 @@ from jwt import PyJWKClient
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+INITIAL_ADMIN_EMAIL = os.environ.get("INITIAL_ADMIN_EMAIL", "chigodobenji@gmail.com").strip().lower()
 JWT_ISSUER = f"{SUPABASE_URL}/auth/v1" if SUPABASE_URL else ""
 JWKS_URL = f"{JWT_ISSUER}/.well-known/jwks.json" if JWT_ISSUER else ""
 _jwks_client = None
@@ -49,6 +51,102 @@ def sign_in_with_password(email: str, password: str) -> dict:
     if not profile or not profile.get("is_active"):
         raise ValueError("This account has not been approved for employee access. Contact the system administrator.")
     return {"token": token, "profile": profile, "expires_in": payload.get("expires_in", 3600)}
+
+
+
+def create_google_pkce_pair() -> tuple[str, str]:
+    verifier = secrets.token_urlsafe(64)
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+    return verifier, challenge
+
+
+def google_authorize_url(redirect_uri: str, challenge: str, state: str) -> str:
+    from urllib.parse import urlencode
+    if not _config_ready():
+        raise AuthenticationUnavailable("Google sign-in has not been configured.")
+    params = urlencode({"provider": "google", "redirect_to": redirect_uri,
+                        "code_challenge": challenge, "code_challenge_method": "s256",
+                        "state": state})
+    return f"{SUPABASE_URL}/auth/v1/authorize?{params}"
+
+
+def exchange_google_code(code: str, verifier: str) -> dict:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Google sign-in has not been configured.")
+    response = requests.post(
+        f"{SUPABASE_URL}/auth/v1/token", params={"grant_type": "pkce"},
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"auth_code": code, "code_verifier": verifier}, timeout=15,
+    )
+    if response.status_code in (400, 401):
+        raise ValueError("Google sign-in could not be verified. Please try again.")
+    response.raise_for_status()
+    payload = response.json()
+    token = payload.get("access_token")
+    if not token:
+        raise AuthenticationUnavailable("Supabase did not return a Google sign-in session.")
+    return {"token": token, "claims": verify_access_token(token)}
+
+
+def get_authenticated_user(access_token: str) -> dict:
+    response = requests.get(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={"apikey": SUPABASE_ANON_KEY, "Authorization": f"Bearer {access_token}"},
+        timeout=12,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def ensure_initial_admin_profile(user: dict) -> dict:
+    email = (user.get("email") or "").strip().lower()
+    identities = user.get("identities") or []
+    providers = set((user.get("app_metadata") or {}).get("providers") or [])
+    provider = (user.get("app_metadata") or {}).get("provider")
+    if provider:
+        providers.add(provider)
+    google_identity = any(identity.get("provider") == "google" for identity in identities)
+    if email != INITIAL_ADMIN_EMAIL or not user.get("email_confirmed_at") or not (google_identity or "google" in providers):
+        raise ValueError("This Google account is not approved for administrator access.")
+    user_id = user.get("id")
+    if not user_id:
+        raise AuthenticationUnavailable("Supabase did not return the authenticated user ID.")
+    existing = get_employee_profile(user_id)
+    if existing:
+        if (existing.get("email") or "").lower() != email:
+            raise ValueError("The authenticated email does not match the approved employee profile.")
+        return existing
+    full_name = ((user.get("user_metadata") or {}).get("full_name")
+                 or (user.get("user_metadata") or {}).get("name")
+                 or "System Administrator")
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+               "Content-Type": "application/json", "Prefer": "return=representation"}
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/employee_profiles", headers=headers,
+        json={"user_id": user_id, "email": email, "full_name": full_name,
+              "role": "system_admin", "is_active": True}, timeout=15,
+    )
+    if response.status_code == 409:
+        existing = get_employee_profile(user_id)
+        if existing:
+            return existing
+    response.raise_for_status()
+    rows = response.json()
+    if not rows:
+        raise AuthenticationUnavailable("The administrator profile was not created.")
+    profile = rows[0]
+    audit = requests.post(
+        f"{SUPABASE_URL}/rest/v1/audit_logs",
+        headers={**headers, "Prefer": "return=minimal"},
+        json={"actor_user_id": user_id, "action": "employee.initial_admin_provisioned",
+              "entity_type": "employee_profile", "entity_id": user_id,
+              "details": {"email": email, "role": "system_admin", "provider": "google"}},
+        timeout=12,
+    )
+    audit.raise_for_status()
+    return profile
 
 
 def verify_access_token(token: str) -> dict:
