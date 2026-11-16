@@ -213,3 +213,24 @@ def test_demo_student_register_query_is_limited_to_fictional_ids(monkeypatch):
     response = web_app.app.test_client().get("/students")
     assert response.status_code == 200
     assert "left(s.student_no, 7) = 'DEMO26-'" in captured["query"]
+
+
+
+def test_connect_db_adds_required_sslmode_when_missing(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(web_app, "DATABASE_URL", "postgresql://demo:secret@db.example.test:5432/demo")
+    monkeypatch.setattr(web_app.psycopg, "connect", lambda url, **kwargs: captured.update(url=url, kwargs=kwargs) or "connection")
+
+    assert web_app.connect_db() == "connection"
+    assert "sslmode=require" in captured["url"]
+    assert "secret" not in captured["url"].split("@")[0]
+
+
+def test_connect_db_rejects_explicitly_insecure_sslmode(monkeypatch):
+    monkeypatch.setattr(web_app, "DATABASE_URL", "postgresql://demo:secret@db.example.test/demo?sslmode=disable")
+    try:
+        web_app.connect_db()
+    except RuntimeError as exc:
+        assert "sslmode=require" in str(exc)
+    else:
+        raise AssertionError("An explicitly insecure database connection must be rejected.")
