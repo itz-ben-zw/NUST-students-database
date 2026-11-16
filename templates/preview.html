@@ -11,7 +11,7 @@
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-unslopped">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-live-showcase">
   <title>Student Accounts | A clearer view of campus finance</title>
 </head>
 <body class="public-site">
@@ -63,24 +63,71 @@
     <p>Follow the everyday finance journey: review a student account, understand what has been billed, trace payments and bring the totals together in reports.</p>
   </section>
 
-  <section class="public-showcase">
-    <div class="showcase-copy">
-      <p class="public-eyebrow">A CONNECTED RECORD</p>
-      <h2>See the detail.<br>Keep the context.</h2>
-      <p>Account balances, invoice references and payment entries belong to the same story. The workspace is designed to make those connections easier to follow.</p>
-      <a class="public-text-link" href="{{ url_for('login') }}">Employee access <span aria-hidden="true">↗</span></a>
+  <section class="public-showcase live-showcase" aria-label="Illustrative student finance dashboard">
+    <div class="showcase-heading">
+      <div><p class="public-eyebrow">INSIDE THE WORKSPACE</p><h2>One view of the<br><em>whole picture.</em></h2></div>
+      <p>Explore how account records, payment progress and collections can come together in one clear workspace.</p>
     </div>
-    <div class="showcase-window" aria-label="Illustrative dashboard interface preview">
-      <div class="showcase-window-bar"><span class="showcase-logo">SA</span><span>Workspace preview</span><span class="showcase-sample-tag">SAMPLE DATA</span></div>
-      <div class="showcase-body">
-        <aside class="showcase-sidebar"><span class="showcase-nav-item is-current">Overview</span><span class="showcase-nav-item">Accounts</span><span class="showcase-nav-item">Invoices</span><span class="showcase-nav-item">Payments</span><span class="showcase-nav-item">Reports</span></aside>
-        <div class="showcase-main">
-          <div class="showcase-greeting"><div><small>FINANCE / ACCOUNT OVERVIEW</small><strong>Account activity</strong></div><span class="showcase-avatar">SA</span></div>
-          <div class="showcase-summary"><div><small>ACCOUNT REFERENCE</small><strong>STU-02481</strong><span>Illustrative student record</span></div><div><small>OUTSTANDING BALANCE</small><strong>$ 420.00</strong><span>Partially paid</span></div></div>
-          <div class="showcase-ledger"><div class="showcase-ledger-heading"><strong>Recent account entries</strong><span>Sample record</span></div><div class="showcase-ledger-row"><span class="ledger-mark">I</span><span><strong>Tuition invoice</strong><small>INV-2026-0142 · 04 Nov 2026</small></span><b>$ 1,200.00</b></div><div class="showcase-ledger-row"><span class="ledger-mark">P</span><span><strong>Payment received</strong><small>PAY-2026-0088 · 09 Nov 2026</small></span><b>− $ 780.00</b></div></div><p class="showcase-data-note">All names, references and amounts shown are illustrative.</p>
-        </div>
+    <div class="finance-demo">
+      <div class="finance-demo-top">
+        <div class="finance-demo-brand"><span class="finance-demo-mark">SA</span><span><strong>Student accounts</strong><small>Finance overview</small></span></div>
+        <span class="finance-demo-period">2026 ACADEMIC YEAR <i></i> SAMPLE DATA</span>
       </div>
-      <div class="showcase-caption"><span>Illustrative interface</span><span>Contains no live student records</span></div>
+      <div class="finance-metrics">
+        <article><span>Total billed</span><strong>$ 248,600</strong><small>Across illustrative accounts</small><i class="metric-spark spark-one"></i></article>
+        <article><span>Payments received</span><strong>$ 186,420</strong><small class="metric-positive">75% of billed amount</small><i class="metric-spark spark-two"></i></article>
+        <article><span>Outstanding</span><strong>$ 62,180</strong><small>Across all faculties</small><i class="metric-spark spark-three"></i></article>
+        <article><span>Accounts up to date</span><strong>68%</strong><small>Paid in full</small><i class="metric-spark spark-four"></i></article>
+      </div>
+      <div class="finance-analytics">
+        <article class="finance-panel collections-panel">
+          <div class="finance-panel-heading"><div><span>COLLECTIONS</span><h3>Payments over time</h3></div><span class="finance-panel-select">Last 6 months <b>⌄</b></span></div>
+          <div class="collections-legend"><span><i></i>Collected</span><span><i></i>Outstanding</span></div>
+          <div class="collections-chart" role="img" aria-label="Illustrative monthly collections chart from June to November 2026">
+            <div class="chart-y-labels"><span>$80k</span><span>$60k</span><span>$40k</span><span>$20k</span><span>$0</span></div>
+            <svg viewBox="0 0 620 190" preserveAspectRatio="none" aria-hidden="true">
+              <defs><linearGradient id="collectionFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5c9a78" stop-opacity=".22"/><stop offset="1" stop-color="#5c9a78" stop-opacity="0"/></linearGradient></defs>
+              <path class="chart-gridline" d="M0 12H620 M0 52H620 M0 92H620 M0 132H620 M0 172H620"/>
+              <path class="chart-area" d="M0 112 C40 104 58 84 103 91 S170 116 206 76 S270 63 310 69 S375 42 413 54 S480 29 516 42 S580 15 620 22 V172 H0Z"/>
+              <path class="chart-line" d="M0 112 C40 104 58 84 103 91 S170 116 206 76 S270 63 310 69 S375 42 413 54 S480 29 516 42 S580 15 620 22"/>
+              <path class="chart-secondary" d="M0 148 C55 145 70 135 103 139 S170 145 206 126 S270 129 310 122 S375 111 413 118 S480 105 516 109 S580 94 620 101"/>
+              <circle cx="516" cy="42" r="4.5" class="chart-point"/>
+            </svg>
+            <div class="chart-x-labels"><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span><span>NOV</span></div>
+          </div>
+          <div class="chart-footnote"><span><i></i>Collection trend</span><strong>+12.8% <small>vs previous period</small></strong></div>
+        </article>
+        <article class="finance-panel faculty-panel">
+          <div class="finance-panel-heading"><div><span>BY FACULTY</span><h3>Payment progress</h3></div><span class="finance-panel-more">•••</span></div>
+          <div class="faculty-progress-list">
+            <div><div class="faculty-row-label"><span>Engineering</span><strong>82%</strong></div><div class="faculty-track"><i style="width:82%"></i></div><small>$ 64,800 collected</small></div>
+            <div><div class="faculty-row-label"><span>Commerce</span><strong>68%</strong></div><div class="faculty-track"><i style="width:68%"></i></div><small>$ 42,300 collected</small></div>
+            <div><div class="faculty-row-label"><span>Applied Sciences</span><strong>91%</strong></div><div class="faculty-track"><i style="width:91%"></i></div><small>$ 51,200 collected</small></div>
+            <div><div class="faculty-row-label"><span>Built Environment</span><strong>59%</strong></div><div class="faculty-track"><i style="width:59%"></i></div><small>$ 28,120 collected</small></div>
+          </div>
+        </article>
+      </div>
+      <article class="finance-panel student-panel">
+        <div class="finance-panel-heading student-panel-heading"><div><span>ACCOUNT DIRECTORY</span><h3>Find a student account</h3></div><span class="directory-count">5 illustrative records</span></div>
+        <div class="directory-controls">
+          <label class="directory-search"><span aria-hidden="true">⌕</span><input id="student-search" type="search" placeholder="Search by name or student number" aria-label="Search sample student accounts"></label>
+          <div class="directory-filters" role="group" aria-label="Filter accounts by payment status">
+            <button class="directory-filter is-active" type="button" data-filter="all" aria-pressed="true">All <b>5</b></button>
+            <button class="directory-filter" type="button" data-filter="paid" aria-pressed="false">Paid <b>2</b></button>
+            <button class="directory-filter" type="button" data-filter="partial" aria-pressed="false">Partial <b>2</b></button>
+            <button class="directory-filter" type="button" data-filter="owing" aria-pressed="false">Owing <b>1</b></button>
+          </div>
+        </div>
+        <div class="directory-table-wrap"><table class="directory-table"><thead><tr><th>STUDENT</th><th>FACULTY</th><th>AMOUNT DUE</th><th>PAYMENT STATUS</th></tr></thead><tbody id="student-rows">
+          <tr data-status="paid"><td><span class="directory-person"><i>TM</i><span><strong>Tariro Moyo</strong><small>STU-2026-0148</small></span></span></td><td>Engineering</td><td class="directory-amount">$ 0.00</td><td><span class="directory-status status-paid">Paid in full</span></td></tr>
+          <tr data-status="partial"><td><span class="directory-person"><i>KN</i><span><strong>Kudakwashe Ncube</strong><small>STU-2026-0216</small></span></span></td><td>Commerce</td><td class="directory-amount">$ 420.00</td><td><span class="directory-status status-partial">Partially paid</span></td></tr>
+          <tr data-status="owing"><td><span class="directory-person"><i>RM</i><span><strong>Rumbidzai Mlambo</strong><small>STU-2026-0332</small></span></span></td><td>Applied Sciences</td><td class="directory-amount">$ 1,200.00</td><td><span class="directory-status status-owing">Payment due</span></td></tr>
+          <tr data-status="paid"><td><span class="directory-person"><i>TN</i><span><strong>Tendai Ndlovu</strong><small>STU-2026-0407</small></span></span></td><td>Built Environment</td><td class="directory-amount">$ 0.00</td><td><span class="directory-status status-paid">Paid in full</span></td></tr>
+          <tr data-status="partial"><td><span class="directory-person"><i>CM</i><span><strong>Chipo Muchengeti</strong><small>STU-2026-0521</small></span></span></td><td>Engineering</td><td class="directory-amount">$ 275.00</td><td><span class="directory-status status-partial">Partially paid</span></td></tr>
+        </tbody></table><p class="directory-empty" id="directory-empty" hidden>No matching sample accounts. Try another search or filter.</p></div>
+        <div class="directory-footer"><span>Showing illustrative records only</span><span>Account details stay connected <b>↗</b></span></div>
+      </article>
+      <div class="finance-demo-disclaimer"><span><i></i> DEMONSTRATION DATA</span><span>All names, figures and account references are fictional.</span></div>
     </div>
   </section>
 
@@ -109,5 +156,36 @@
   </footer>
 </main>
 
+<script>
+(() => {
+  const search = document.getElementById('student-search');
+  const rows = Array.from(document.querySelectorAll('#student-rows tr'));
+  const filters = Array.from(document.querySelectorAll('.directory-filter'));
+  const empty = document.getElementById('directory-empty');
+  if (!search || !rows.length) return;
+  let active = 'all';
+  const update = () => {
+    const term = search.value.trim().toLowerCase();
+    let visible = 0;
+    rows.forEach(row => {
+      const matchesStatus = active === 'all' || row.dataset.status === active;
+      const matchesText = row.textContent.toLowerCase().includes(term);
+      row.hidden = !(matchesStatus && matchesText);
+      if (!row.hidden) visible++;
+    });
+    empty.hidden = visible !== 0;
+  };
+  search.addEventListener('input', update);
+  filters.forEach(button => button.addEventListener('click', () => {
+    active = button.dataset.filter;
+    filters.forEach(item => {
+      const selected = item === button;
+      item.classList.toggle('is-active', selected);
+      item.setAttribute('aria-pressed', String(selected));
+    });
+    update();
+  }));
+})();
+</script>
 </body>
 </html>
