@@ -30,6 +30,14 @@ app.config.update(
 )
 csrf = CSRFProtect(app)
 
+
+def clear_auth_session():
+    """Clear authentication state without invalidating Flask-WTF's CSRF token."""
+    csrf_token = session.get("_csrf_token")
+    session.clear()
+    if csrf_token:
+        session["_csrf_token"] = csrf_token
+
 @app.get("/healthz")
 def healthz():
     try:
@@ -53,7 +61,7 @@ def public_preview():
 @app.post("/try-demo")
 def try_demo():
     """Start a short-lived, signed-cookie demo session without an employee account."""
-    session.clear()
+    clear_auth_session()
     session.permanent = True
     session["demo_mode"] = True
     return redirect(url_for("dashboard"))
@@ -68,7 +76,7 @@ def login():
         password = request.form.get("password", "")
         try:
             result = sign_in_with_password(email, password)
-            session.clear()
+            clear_auth_session()
             session.permanent = True
             session["web_session_id"] = create_web_session(result["token"], result["profile"]["user_id"])
             target = request.args.get("next", "")
@@ -90,7 +98,7 @@ def logout():
             delete_web_session(session.get("web_session_id"))
     except requests.RequestException:
         app.logger.warning("Could not remove server-side employee session during sign-out.")
-    session.clear()
+    clear_auth_session()
     flash("You have been signed out.", "success")
     return redirect(url_for("login"))
 
