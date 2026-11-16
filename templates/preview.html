@@ -16,8 +16,9 @@
     <a class="preview-brand" href="{{ url_for('public_preview') }}"><span class="preview-brand-mark">SA</span><span>Student accounts<small>Accounts management</small></span></a>
     <div class="preview-header-actions"><a class="preview-login" href="{{ url_for('login') }}">Employee sign in</a><form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button primary" type="submit">Try the demo →</button></form></div>
   </header>
-  <section class="preview-hero">
-    <div><p class="preview-context">Semester 2 · 2026</p><h1>Student accounts</h1><p>Find a student, check their balance and keep track of payments received across faculties.</p></div>
+  <section class="preview-hero" aria-label="NUST campus">
+    <div class="preview-hero-copy"><p class="preview-context">Semester 2 · 2026</p><h1>Student accounts</h1><p>Find a student, check their balance and keep track of payments received across faculties.</p></div>
+    <span class="preview-hero-caption">Built for clearer campus finance</span>
   </section>
   <form class="preview-search" id="preview-search-form">
     <label for="preview-search-input">Find a student</label>
