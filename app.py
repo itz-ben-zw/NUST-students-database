@@ -447,7 +447,7 @@ def payments():
 
 
 @app.route("/reports")
-@roles_required("system_admin", "finance", "auditor")
+@roles_required("system_admin", "finance", "auditor", "demo")
 def reports():
     rows = decorate_invoices(invoice_rows())
     totals = {}
@@ -467,7 +467,7 @@ def reports():
 
 
 @app.route("/receipt/<receipt_no>")
-@roles_required("system_admin", "finance", "auditor")
+@roles_required("system_admin", "finance", "auditor", "demo")
 def receipt_page(receipt_no):
     row = get_db().execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no,pr.name AS programme_name,f.name AS faculty_name
