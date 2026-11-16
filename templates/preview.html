@@ -3,17 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f3f6fa">
-  <title>Student Accounts System</title>
+  NaN
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+<div class="project-notice"><strong>Independent project · Not an official NUST system</strong><span>Fictional sample data for demonstration only</span></div>
 <main class="preview-page"><div class="preview-wrap">
   <header class="preview-header">
     <a class="preview-brand" href="{{ url_for('public_preview') }}"><span class="preview-brand-mark">SA</span><span>Student accounts<small>Accounts management</small></span></a>
-    <a class="preview-login" href="{{ url_for('login') }}">Sign in</a>
+    <div class="preview-header-actions"><a class="preview-login" href="{{ url_for('login') }}">Employee sign in</a><form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button primary" type="submit">Try the demo →</button></form></div>
   </header>
-  <div class="preview-warning"><strong>Illustrative records</strong><span>All names, student numbers, balances and transactions on this page are fictional.</span></div>
   <section class="preview-hero">
     <div><p class="preview-context">Semester 2 · 2026</p><h1>Student accounts</h1><p>Find a student, check their balance and keep track of payments received across faculties.</p></div>
   </section>
@@ -28,13 +27,13 @@
     <article class="preview-metric"><span>Still owed</span><strong data-count-up>USD 11,330.00</strong></article>
     <article class="preview-metric"><span>Collection progress</span><strong data-count-up>14.6%</strong></article>
   </section>
-  <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>5 example accounts shown</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
-    <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr data-preview-account><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr data-preview-account><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td><span class="status-chip owing">Owing</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+  <section class="preview-panel preview-accounts"><div class="preview-panel-heading"><div><h2>Student balances</h2><p>Sorted by highest outstanding balance.</p></div><span>5 example accounts shown</span></div><div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>Student</th><th>Student number</th><th>Programme</th><th>Due date</th><th>Payment status</th><th>Still owed</th><th>Account</th></tr></thead><tbody>
+    <tr data-preview-account><td><strong>Kudzai Sibanda</strong><small>Applied Sciences</small></td><td class="mono">SAMPLE26-0004</td><td>Applied Mathematics</td><td>15 Sep 2026</td><td><span class="status-chip owing">Unpaid</span></td><td class="preview-balance">USD 1,010.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Rudo Mupfumi</strong><small>Computing</small></td><td class="mono">SAMPLE26-0005</td><td>Information Systems</td><td>15 Oct 2026</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 880.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+    <tr data-preview-account><td><strong>Nyasha Ndlovu</strong><small>Engineering</small></td><td class="mono">SAMPLE26-0003</td><td>Engineering Systems</td><td>30 Sep 2026</td><td><span class="status-chip owing">Unpaid</span></td><td class="preview-balance">USD 850.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
     <tr data-preview-account><td><strong>Tariro Moyo</strong><small>Computing</small></td><td class="mono">SAMPLE26-0001</td><td>Information Systems</td><td><span class="status-chip partial">Partial</span></td><td class="preview-balance">USD 830.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-    <tr data-preview-account><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
-  </tbody></table></div><p class="preview-table-note">The public view is read-only. Sign in is required for account details and payment recording.</p></section>
+    <tr data-preview-account><td><strong>Tawanda Dube</strong><small>Computing</small></td><td class="mono">SAMPLE26-0002</td><td>Software Engineering</td><td>15 Sep 2026</td><td><span class="status-chip paid">Paid</span></td><td class="preview-balance">USD 0.00</td><td><a href="{{ url_for('login') }}">View account</a></td></tr>
+  </tbody></table></div><div class="preview-register-footer"><span>Showing 5 of 12 students</span><form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-link" type="submit">View all students →</button></form></div><p class="preview-table-note">All records are fictional. The demo workspace is read-only.</p></section>
   <section class="preview-columns">
     <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Collection progress</h2><p>Received compared with total invoiced.</p></div></div>
       <div class="preview-faculty"><div><strong>Computing</strong><small>6 student accounts</small><div class="preview-bar"><i data-progress-fill style="width:24%"></i></div></div><div class="preview-amount"><span data-count-up>24%</span><small>received</small></div></div>
@@ -43,9 +42,9 @@
     </article>
     <article class="preview-panel"><div class="preview-panel-heading"><div><h2>Recent payments</h2><p>Latest illustrative transactions.</p></div></div>
       <div class="preview-receipt"><span><strong>Tawanda Dube</strong><small>Bank transfer · 12 Nov 2026</small></span><b>USD 1,080</b></div>
-      <div class="preview-receipt"><span><strong>Nyasha Ndlovu</strong><small>RTGS · 10 Nov 2026</small></span><b>USD 400</b></div>
-      <div class="preview-receipt"><span><strong>Tariro Moyo</strong><small>EcoCash · 08 Nov 2026</small></span><b>USD 250</b></div>
-      <div class="preview-receipt"><span><strong>Rudo Mupfumi</strong><small>EcoCash · 06 Nov 2026</small></span><b>USD 200</b></div>
+      <div class="preview-receipt"><span><strong>Rudo Mupfumi</strong><small>08 Nov 2026 · DEMO-RCP-2026-0004 · EcoCash</small></span><b>USD 200</b></div>
+      <div class="preview-receipt"><span><strong>Nyasha Ndlovu</strong><small>02 Nov 2026 · DEMO-RCP-2026-0003 · RTGS</small></span><b>USD 400</b></div>
+      <div class="preview-receipt"><span><strong>Tariro Moyo</strong><small>15 Oct 2026 · DEMO-RCP-2026-0001 · EcoCash</small></span><b>USD 250</b></div>
     </article>
   </section>
   <footer class="preview-footer">
