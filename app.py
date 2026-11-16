@@ -15,7 +15,7 @@ from flask import Flask, abort, flash, g, redirect, render_template, request, se
 from flask_wtf.csrf import CSRFProtect
 
 from security import (AuthenticationUnavailable, create_web_session, current_employee,
-                      delete_web_session, invite_employee, list_employee_profiles, set_employee_active,
+                      delete_web_session, invite_employee, list_employee_profiles, set_employee_active, set_employee_role,
                       login_required, roles_required, sign_in_with_password,
                       create_google_pkce_pair, google_authorize_url, exchange_google_code,
                       get_authenticated_user, get_employee_profile, ensure_initial_admin_profile)
@@ -170,6 +170,20 @@ def logout():
 @app.route("/admin/employees", methods=["GET", "POST"])
 @roles_required("system_admin")
 def employee_admin():
+    if request.method == "POST" and request.form.get("action") == "change_role":
+        target_user_id = request.form.get("user_id", "")
+        new_role = request.form.get("role", "").strip()
+        actor = current_employee()
+        if target_user_id == actor["user_id"] and new_role != "system_admin":
+            flash("You cannot change your own administrator role.", "error")
+            return redirect(url_for("employee_admin"))
+        try:
+            set_employee_role(target_user_id, new_role, actor["user_id"])
+            flash("Employee role updated.", "success")
+        except (ValueError, AuthenticationUnavailable, requests.RequestException) as exc:
+            app.logger.error("Employee role update failed: %s", exc)
+            flash(str(exc) if isinstance(exc, ValueError) else "Could not update employee role. Review the employee record and audit log.", "error")
+        return redirect(url_for("employee_admin"))
     if request.method == "POST" and request.form.get("action") == "toggle_active":
         target_user_id = request.form.get("user_id", "")
         active = request.form.get("active") == "true"
@@ -580,7 +594,7 @@ def reports():
 
 
 @app.route("/receipt/<receipt_no>")
-@roles_required("system_admin", "finance", "auditor", "demo")
+@roles_required("system_admin", "finance_manager", "finance", "accountant", "payments_clerk", "auditor", "demo")
 def receipt_page(receipt_no):
     row = get_db().execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no,pr.name AS programme_name,f.name AS faculty_name
