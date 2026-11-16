@@ -15,7 +15,9 @@ from flask_wtf.csrf import CSRFProtect
 
 from security import (AuthenticationUnavailable, create_web_session, current_employee,
                       delete_web_session, invite_employee, list_employee_profiles, set_employee_active,
-                      login_required, roles_required, sign_in_with_password)
+                      login_required, roles_required, sign_in_with_password,
+                      create_google_pkce_pair, google_authorize_url, exchange_google_code,
+                      get_authenticated_user, ensure_initial_admin_profile)
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 app = Flask(__name__)
@@ -95,6 +97,62 @@ def login():
             app.logger.warning("Employee sign-in unavailable: %s", exc)
             flash("Sign-in is temporarily unavailable. Please try again later.", "error")
     return render_template("login.html")
+
+
+@app.get("/auth/google")
+def google_sign_in():
+    if current_employee():
+        return redirect(url_for("dashboard"))
+    verifier, challenge = create_google_pkce_pair()
+    state = uuid.uuid4().hex
+    session["google_oauth_verifier"] = verifier
+    session["google_oauth_state"] = state
+    session.permanent = True
+    try:
+        return redirect(google_authorize_url(
+            url_for("google_callback", _external=True, _scheme="https"), challenge, state
+        ))
+    except AuthenticationUnavailable as exc:
+        app.logger.warning("Google sign-in is not configured: %s", exc)
+        flash("Google sign-in is not configured yet. Use password sign-in for now.", "error")
+        return redirect(url_for("login"))
+
+
+@app.get("/auth/callback")
+def google_callback():
+    expected_state = session.pop("google_oauth_state", None)
+    verifier = session.pop("google_oauth_verifier", None)
+    returned_state = request.args.get("state")
+    code = request.args.get("code")
+    if not expected_state or not verifier or not returned_state or not secrets.compare_digest(expected_state, returned_state):
+        flash("Google sign-in expired or could not be verified. Please try again.", "error")
+        return redirect(url_for("login"))
+    if request.args.get("error") or not code:
+        flash("Google sign-in was cancelled or denied.", "error")
+        return redirect(url_for("login"))
+    try:
+        result = exchange_google_code(code, verifier)
+        auth_user = get_authenticated_user(result["token"])
+        if auth_user.get("id") != result["claims"].get("sub"):
+            raise ValueError("The Google identity could not be verified.")
+        profile = get_employee_profile(auth_user["id"])
+        if not profile:
+            profile = ensure_initial_admin_profile(auth_user)
+        if not profile or not profile.get("is_active"):
+            raise ValueError("This account is not approved for employee access.")
+        if (profile.get("email") or "").strip().lower() != (auth_user.get("email") or "").strip().lower():
+            raise ValueError("The Google email does not match the approved employee profile.")
+        clear_auth_session()
+        session.permanent = True
+        session["web_session_id"] = create_web_session(result["token"], profile["user_id"])
+        flash("Signed in with Google.", "success")
+        return redirect(url_for("dashboard"))
+    except ValueError as exc:
+        flash(str(exc), "error")
+    except (AuthenticationUnavailable, requests.RequestException) as exc:
+        app.logger.warning("Google sign-in failed: %s", exc)
+        flash("Google sign-in is temporarily unavailable. Please try again later.", "error")
+    return redirect(url_for("login"))
 
 @app.route("/logout", methods=["POST"])
 @login_required
