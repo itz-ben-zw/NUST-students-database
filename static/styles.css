@@ -396,7 +396,7 @@ body{font-family:var(--font);font-size:14px;letter-spacing:0}
 .public-nav-links a:hover,.public-signin:hover{color:#17634f}
 .public-nav-actions{display:flex;align-items:center;gap:20px}
 .public-nav-actions form,.public-hero-actions form,.public-access-actions form{margin:0}
-.public-button{display:inline-flex;align-items:center;justify-content:center;gap:15px;min-height:44px;padding:0 18px;border:0;border-radius:5px;font:650 12px inherit;cursor:pointer;text-decoration:none;transition:background .2s ease,transform .2s ease}
+.public-button{display:inline-flex;align-items:center;justify-content:center;gap:15px;min-height:44px;padding:0 18px;border:0;border-radius:5px;font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;text-decoration:none;transition:background .2s ease,transform .2s ease}
 .public-button:hover{transform:translateY(-1px)}
 .public-button-dark{background:#173c3b;color:#fff}
 .public-button-dark:hover{background:#235750}
