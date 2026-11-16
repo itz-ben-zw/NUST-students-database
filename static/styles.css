@@ -893,3 +893,10 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 /* Give the capabilities panel and demo call-to-action their own breathing room */
 .public-access{margin-top:48px}
 @media(max-width:700px){.public-access{margin-top:28px}}
+
+
+/* Social links on the standalone public preview footer */
+.public-footer-bottom .public-footer-socials{margin:0 0 0 auto;gap:9px;flex-shrink:0}
+.public-footer-bottom .public-footer-socials a{width:29px;height:29px;border-color:#dce8e0;color:#527565;background:#fff}
+.public-footer-bottom .public-footer-socials a:hover{color:#fff;background:#245b4b;border-color:#245b4b}
+@media(max-width:700px){.public-footer-bottom .public-footer-socials{width:auto;margin:8px 0 0;gap:12px}.public-footer-bottom .public-footer-socials a{width:32px;height:32px}}
