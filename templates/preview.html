@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A student accounts management concept exploring clearer finance workflows for higher education. Independent academic project.">
+  <meta name="description" content="A clear, connected view of student accounts, invoices and payments.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Student Accounts">
   <meta property="og:title" content="Student Accounts | A clearer view of campus finance">
-  <meta property="og:description" content="An independent academic project exploring a considered student accounts and finance workspace.">
+  <meta property="og:description" content="Explore a connected student accounts and finance workspace.">
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
@@ -19,7 +19,7 @@
   <header class="public-nav">
     <a class="public-brand" href="{{ url_for('public_preview') }}" aria-label="Student Accounts home">
       <span class="public-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M6 23.5V8.5h4.2l5.8 8 5.8-8H26v15h-4V14l-6 8-6-8v9.5H6Z" fill="currentColor"/></svg></span>
-      <span><strong>Student Accounts</strong><small>Finance workspace concept</small></span>
+      <span><strong>Student Accounts</strong><small>Accounts · Invoices · Payments</small></span>
     </a>
     <nav class="public-nav-links" aria-label="Main navigation">
       <a href="#platform">Platform</a><a href="#capabilities">Capabilities</a><a href="#about">About</a>
@@ -96,15 +96,7 @@
           </div>
           <div class="chart-footnote"><span><i></i>Collection trend</span><strong>+12.8% <small>vs previous period</small></strong></div>
         </article>
-        <article class="finance-panel faculty-panel" hidden>
-          <div class="finance-panel-heading"><div><span>BY FACULTY</span><h3>Payment progress</h3></div><span class="finance-panel-more">•••</span></div>
-          <div class="faculty-progress-list">
-            <div><div class="faculty-row-label"><span>Engineering</span><strong>82%</strong></div><div class="faculty-track"><i style="width:82%"></i></div><small>$ 64,800 collected</small></div>
-            <div><div class="faculty-row-label"><span>Commerce</span><strong>68%</strong></div><div class="faculty-track"><i style="width:68%"></i></div><small>$ 42,300 collected</small></div>
-            <div><div class="faculty-row-label"><span>Applied Sciences</span><strong>91%</strong></div><div class="faculty-track"><i style="width:91%"></i></div><small>$ 51,200 collected</small></div>
-            <div><div class="faculty-row-label"><span>Built Environment</span><strong>59%</strong></div><div class="faculty-track"><i style="width:59%"></i></div><small>$ 28,120 collected</small></div>
-          </div>
-        </article>
+
       </div>
       <div class="finance-demo-disclaimer"><span><i></i> CONCEPTUAL PREVIEW</span><span>Illustrative figures, not live university data.</span></div>
     </div>
@@ -130,8 +122,8 @@
   </section>
 
   <footer class="public-footer">
-    <div class="public-footer-top"><a class="public-brand" href="{{ url_for('public_preview') }}"><span class="public-brand-mark" aria-hidden="true">SA</span><span><strong>Student Accounts</strong><small>Finance workspace concept</small></span></a><p>An independent academic project exploring student finance workflows.</p><div class="public-footer-links"><a href="https://www.nust.ac.zw/index.php/privacy-notice.html" target="_blank" rel="noopener noreferrer">NUST website privacy notice</a><a href="https://www.nust.ac.zw/" target="_blank" rel="noopener noreferrer">NUST website</a></div></div>
-    <div class="public-footer-bottom"><span>© 2026 Student Accounts. All rights reserved.</span><span>Independent academic project · Not an official NUST service</span></div>
+    <div class="public-footer-top"><a class="public-brand" href="{{ url_for('public_preview') }}"><span class="public-brand-mark" aria-hidden="true">SA</span><span><strong>Student Accounts</strong><small>Finance workspace concept</small></span></a><p>A connected view of student accounts, invoices and payments.</p><div class="public-footer-links"><a href="https://www.nust.ac.zw/index.php/privacy-notice.html" target="_blank" rel="noopener noreferrer">NUST website privacy notice</a><a href="https://www.nust.ac.zw/" target="_blank" rel="noopener noreferrer">NUST website</a></div></div>
+    <div class="public-footer-bottom"><span>© 2026 Student Accounts. All rights reserved.</span><span>Student finance workspace</span></div>
   </footer>
 </main>
 
