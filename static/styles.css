@@ -576,3 +576,25 @@ body{font-family:var(--font);font-size:14px;letter-spacing:0}
 .heritage-rule small{color:#8a9a92;font-size:8px;font-weight:800;letter-spacing:.13em}
 @media(max-width:980px){.public-campus-art{min-height:390px}.public-heritage{gap:35px;padding:55px 5%}}
 @media(max-width:700px){.public-campus-art{min-height:340px;margin:5px 0 25px}.campus-photo-frame{inset:8px 6px 24px 12px}.campus-photo-label{right:12px;left:12px;font-size:6px}.campus-float-card{padding:10px 12px}.public-heritage{grid-template-columns:1fr;gap:27px;padding:25px 18px;margin:35px 0 0}.heritage-image-wrap,.heritage-image-wrap img{height:245px;min-height:245px}.heritage-copy h2{font-size:36px}}
+
+
+/* Seamless campus-photo hero: image sits behind the headline, not in a pasted card */
+.public-hero.public-hero-photo{display:flex;align-items:center;min-height:620px;padding:76px clamp(28px,5.2vw,78px) 88px;margin:0 -1px 0;overflow:hidden;border:0;border-radius:0;background:#102e35 url("https://alumni.nust.ac.zw/img/nust-campus-hero.jpg") center 48%/cover no-repeat;isolation:isolate}
+.public-hero.public-hero-photo::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(8,31,37,.88) 0%,rgba(8,31,37,.76) 43%,rgba(8,31,37,.34) 75%,rgba(8,31,37,.16) 100%),linear-gradient(0deg,rgba(8,31,37,.42),transparent 55%)}
+.public-hero-photo .public-hero-copy{max-width:650px;padding:0 0 12px}
+.public-hero-photo .public-eyebrow{color:#d0e2d9}
+.public-hero-photo .public-eyebrow>span{background:#9dd3b7}
+.public-hero-photo h1{color:#fff}
+.public-hero-photo h1 em{color:#b5e1c7}
+.public-hero-photo .public-hero-lede{max-width:520px;color:rgba(255,255,255,.88)}
+.public-hero-photo .public-proof{color:rgba(255,255,255,.82);border-top-color:rgba(255,255,255,.25)}
+.public-hero-photo .public-proof-mark{color:#b5e1c7}
+.public-hero-photo .public-text-link{color:#f2f7f3}
+.public-hero-photo .public-hero-foot{color:rgba(255,255,255,.72)}
+.public-hero-photo .public-button-green{background:#a8d6b8;color:#123d32}
+.public-hero-photo .public-button-green:hover{background:#c0e5cb}
+.public-heritage{display:block;max-width:780px;margin:60px auto 10px;padding:45px 5%;text-align:center}
+.public-heritage .heritage-copy{max-width:620px;margin:auto}
+.public-heritage .heritage-copy>p:not(.public-eyebrow){margin-left:auto;margin-right:auto}
+.public-heritage .heritage-rule{justify-content:center}
+@media(max-width:700px){.public-hero.public-hero-photo{min-height:650px;padding:64px 20px 75px;margin:0 -18px;background-position:58% center}.public-hero.public-hero-photo::before{background:linear-gradient(90deg,rgba(8,31,37,.82),rgba(8,31,37,.45)),linear-gradient(0deg,rgba(8,31,37,.48),transparent 70%)}.public-hero-photo .public-hero-copy{max-width:100%}.public-hero-photo .public-hero-foot{right:20px;left:20px}.public-heritage{margin:35px auto 0;padding:32px 18px}}
