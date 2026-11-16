@@ -27,7 +27,8 @@ if not app.secret_key:
     raise RuntimeError("Set SECRET_KEY before starting the application.")
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=os.environ.get("FLASK_ENV") == "production",
+    # HTTPS is the default on Render; keep session cookies Secure unless a local HTTP developer explicitly opts out.
+    SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "true").strip().lower() in {"1", "true", "yes", "on"},
     SESSION_COOKIE_SAMESITE="Lax",
     PERMANENT_SESSION_LIFETIME=__import__("datetime").timedelta(minutes=30),
 )
