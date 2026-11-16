@@ -320,7 +320,7 @@ def dashboard():
     employee = current_employee()
     if employee is None:
         return redirect(url_for("public_preview"))
-    if employee.get("role") not in {"system_admin", "finance", "student_records", "auditor", "demo"}:
+    if employee.get("role") not in {"system_admin", "finance_manager", "finance", "accountant", "payments_clerk", "student_records", "auditor", "demo"}:
         abort(403)
     demo_mode = employee.get("role") == "demo"
     invoice_scope = "left(s.student_no, 7) = 'DEMO26-' AND " if demo_mode else ""
@@ -395,7 +395,7 @@ def students():
 
 
 @app.route("/invoices")
-@roles_required("system_admin", "finance", "auditor", "demo")
+@roles_required("system_admin", "finance_manager", "finance", "accountant", "auditor", "demo")
 def invoices_page():
     q = request.args.get("q", "").strip()
     demo_mode = current_employee().get("role") == "demo"
@@ -415,7 +415,7 @@ def invoices_page():
 
 
 @app.route("/payments", methods=["GET", "POST"])
-@roles_required("system_admin", "finance", "demo")
+@roles_required("system_admin", "finance_manager", "finance", "accountant", "payments_clerk", "demo")
 def payments():
     if request.method == "POST" and current_employee().get("role") == "demo":
         abort(403)
@@ -556,7 +556,7 @@ def payments():
 
 
 @app.route("/reports")
-@roles_required("system_admin", "finance", "auditor", "demo")
+@roles_required("system_admin", "finance_manager", "finance", "accountant", "auditor", "demo")
 def reports():
     demo_scope = "WHERE left(s.student_no, 7) = 'DEMO26-'" if current_employee().get("role") == "demo" else ""
     rows = decorate_invoices(invoice_rows(demo_scope))
