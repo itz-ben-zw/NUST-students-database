@@ -18,7 +18,7 @@ from security import (AuthenticationUnavailable, create_web_session, current_emp
                       delete_web_session, invite_employee, list_employee_profiles, set_employee_active,
                       login_required, roles_required, sign_in_with_password,
                       create_google_pkce_pair, google_authorize_url, exchange_google_code,
-                      get_authenticated_user, ensure_initial_admin_profile)
+                      get_authenticated_user, get_employee_profile, ensure_initial_admin_profile)
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 app = Flask(__name__)
