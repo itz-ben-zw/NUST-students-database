@@ -926,3 +926,5 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .auth-divider{display:flex;align-items:center;gap:12px;margin:19px 0 0;color:#9aa49c;font-size:9px}
 .auth-divider:before,.auth-divider:after{content:"";height:1px;flex:1;background:#e9ebe5}
 .auth-divider+form.payment-form{margin-top:17px}
+
+.role-guidance{display:grid;gap:8px;padding:13px 14px;margin:4px 0 16px;background:#f4f6f1;border:1px solid #e5e9df;border-radius:8px}.role-guidance p{display:flex;flex-direction:column;gap:3px;margin:0}.role-guidance strong{font-size:11px;color:#29473e}.role-guidance span{font-size:10px;line-height:1.45;color:#7b8980}.payment-history .muted{margin-top:5px}
