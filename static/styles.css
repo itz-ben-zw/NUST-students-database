@@ -704,3 +704,24 @@ input,select,textarea{border-color:#d7e4dc}
 }
 .preview-footer-bottom{border-top-color:#dce8e0!important}
 .table-panel-footer{border-color:#dce8e0!important}
+
+
+/* Mobile bottom navigation: replace legacy navy/blue treatment */
+.mobile-nav{
+  background:rgba(234,241,236,.97)!important;
+  border-top:1px solid #dce8e0!important;
+  box-shadow:0 -8px 24px rgba(23,62,56,.06)!important;
+}
+.mobile-nav a{
+  color:#71847b!important;
+  background:transparent!important;
+}
+.mobile-nav a:hover,
+.mobile-nav a.active{
+  color:#245b4b!important;
+  background:#d9e9df!important;
+}
+.mobile-nav a:focus-visible{
+  outline:2px solid #5b9a7c!important;
+  outline-offset:2px;
+}
