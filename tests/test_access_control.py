@@ -60,7 +60,7 @@ def test_public_preview_is_available_without_database_or_login():
     response = web_app.app.test_client().get("/preview")
     assert response.status_code == 200
     assert b"Student accounts" in response.data
-    assert b"Not an official NUST system" in response.data
+    assert b"CONCEPTUAL PREVIEW" in response.data
 
 
 def test_homepage_opens_public_preview_for_visitors():
@@ -222,7 +222,8 @@ def test_connect_db_adds_required_sslmode_when_missing(monkeypatch):
     monkeypatch.setattr(web_app.psycopg, "connect", lambda url, **kwargs: captured.update(url=url, kwargs=kwargs) or "connection")
 
     assert web_app.connect_db() == "connection"
-    assert "sslmode=require" in captured["url"]
+    assert captured["url"].startswith("postgresql://")
+    assert captured["kwargs"]["sslmode"] == "require"
 
 
 def test_connect_db_rejects_explicitly_insecure_sslmode(monkeypatch):
