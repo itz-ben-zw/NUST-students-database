@@ -60,7 +60,7 @@ def test_public_preview_is_available_without_database_or_login():
     response = web_app.app.test_client().get("/preview")
     assert response.status_code == 200
     assert b"Student accounts" in response.data
-    assert b"Not an official NUST system" in response.data
+    assert b"CONCEPTUAL PREVIEW" in response.data
 
 
 def test_homepage_opens_public_preview_for_visitors():
@@ -222,7 +222,8 @@ def test_connect_db_adds_required_sslmode_when_missing(monkeypatch):
     monkeypatch.setattr(web_app.psycopg, "connect", lambda url, **kwargs: captured.update(url=url, kwargs=kwargs) or "connection")
 
     assert web_app.connect_db() == "connection"
-    assert "sslmode=require" in captured["url"]
+    assert captured["url"].startswith("postgresql://")
+    assert captured["kwargs"]["sslmode"] == "require"
 
 
 def test_connect_db_rejects_explicitly_insecure_sslmode(monkeypatch):
@@ -233,3 +234,28 @@ def test_connect_db_rejects_explicitly_insecure_sslmode(monkeypatch):
         assert "sslmode=require" in str(exc)
     else:
         raise AssertionError("An explicitly insecure database connection must be rejected.")
+
+
+def test_google_sign_in_rejects_unprovisioned_employee(monkeypatch):
+    """Google identity alone must never grant an employee role."""
+    web_app.app.config["WTF_CSRF_ENABLED"] = False
+    client = web_app.app.test_client()
+    with client.session_transaction() as browser_session:
+        browser_session["google_oauth_state"] = "expected-state"
+        browser_session["google_oauth_verifier"] = "test-verifier"
+
+    monkeypatch.setattr(
+        web_app, "exchange_google_code",
+        lambda code, verifier: {"token": "test-token", "claims": {"sub": "user-123"}},
+    )
+    monkeypatch.setattr(
+        web_app, "get_authenticated_user",
+        lambda token: {"id": "user-123", "email": "staff@nust.ac.zw"},
+    )
+    monkeypatch.setattr(web_app, "get_employee_profile", lambda user_id: None)
+
+    response = client.get("/auth/callback?state=expected-state&code=one-time-code")
+    assert response.status_code == 302
+    with client.session_transaction() as browser_session:
+        assert "web_session_id" not in browser_session
+        assert browser_session.get("google_oauth_verifier") is None
