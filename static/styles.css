@@ -975,7 +975,7 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .public-signin{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 13px;border:1px solid #d8e3dc;border-radius:5px;white-space:nowrap}
 .public-signin:hover{background:#f2f7f3;border-color:#a9c5b3}
 .public-menu-toggle{display:none}
-.public-hero.public-hero-photo::before{background:linear-gradient(90deg,rgba(5,24,30,.91) 0%,rgba(5,24,30,.83) 48%,rgba(5,24,30,.66) 100%),linear-gradient(0deg,rgba(5,24,30,.72) 0%,rgba(5,24,30,.08) 78%)}
+.public-hero.public-hero-photo::before{background:linear-gradient(90deg,rgba(5,24,30,.72) 0%,rgba(5,24,30,.58) 48%,rgba(5,24,30,.34) 100%),linear-gradient(0deg,rgba(5,24,30,.38) 0%,rgba(5,24,30,.03) 78%)}
 .public-hero-photo .public-hero-lede{color:#f2f6f4}
 .public-hero-actions{gap:18px}
 .public-hero-actions .public-text-link{min-height:46px;padding:0 19px;border:1px solid rgba(255,255,255,.8);border-radius:5px;background:rgba(8,27,31,.52);color:#fff;transition:background .2s ease,border-color .2s ease}
