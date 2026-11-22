@@ -7,7 +7,7 @@ from psycopg.rows import dict_row
 
 FACULTIES = {
     "Faculty of Agricultural Science & Technology": ["BSc Agricultural Technology", "BSc Agribusiness Management"],
-    "Faculty of Applied Science": ["BSc Applied Mathematics", "BSc Computer Science"],
+    "Faculty of Applied Science": ["BSc Applied Mathematics", "BSc Computer Science", "BSc Informatics and Analytics"],
     "Faculty of The Built Environment": ["BSc Architecture", "BSc Quantity Surveying"],
     "Faculty of Business & Economic Sciences": ["BCom Accounting Sciences", "BSc Actuarial Science"],
     "Faculty of Comm & Information Science": ["BSc Journalism and Media Studies", "BSc Library and Information Science"],
@@ -43,6 +43,27 @@ def main() -> int:
                     cur.execute("UPDATE programmes SET faculty_id=%s WHERE name=%s", (faculty_ids[faculty], name))
                     cur.execute("SELECT id FROM programmes WHERE name=%s", (name,))
                     programme_ids[(faculty, name)] = cur.fetchone()["id"]
+            # Move the original 12 demo students into the official faculty structure.
+            legacy_programmes = {
+                "DEMO26-0001": "BSc Informatics and Analytics (Demo)",
+                "DEMO26-0002": "BSc Computer Science (Demo)",
+                "DEMO26-0003": "BEng Civil and Water Engineering (Demo)",
+                "DEMO26-0004": "BSc Applied Mathematics (Demo)",
+                "DEMO26-0005": "BSc Informatics and Analytics (Demo)",
+                "DEMO26-0006": "BSc Computer Science (Demo)",
+                "DEMO26-0007": "BEng Electronic Engineering (Demo)",
+                "DEMO26-0008": "BSc Applied Mathematics (Demo)",
+                "DEMO26-0009": "BSc Informatics and Analytics (Demo)",
+                "DEMO26-0010": "BSc Computer Science (Demo)",
+                "DEMO26-0011": "BEng Civil and Water Engineering (Demo)",
+                "DEMO26-0012": "BSc Applied Mathematics (Demo)",
+            }
+            for student_no, programme in legacy_programmes.items():
+                cur.execute("UPDATE students SET programme_id=%s WHERE student_no=%s",
+                            (programme_ids[("Faculty of Applied Science", programme)] if programme.startswith(("BSc Informatics", "BSc Computer", "BSc Applied")) else programme_ids[("Faculty of Engineering", programme)], student_no))
+            cur.execute("DELETE FROM semester_fees sf USING faculties f WHERE sf.faculty_id=f.id AND f.name LIKE '%(Demo)'")
+            cur.execute("DELETE FROM programmes WHERE name LIKE '%(Demo)' AND faculty_id IN (SELECT id FROM faculties WHERE name LIKE '%(Demo)')")
+            cur.execute("DELETE FROM faculties WHERE name LIKE '%(Demo)'")
             sponsor_ids = {}
             for sponsor, kind in zip(SPONSORS, ["Family", "Self-funded", "Scholarship"]):
                 cur.execute("INSERT INTO sponsors(display_name,sponsor_type) SELECT %s,%s WHERE NOT EXISTS(SELECT 1 FROM sponsors WHERE display_name=%s)", (sponsor, kind, sponsor))
