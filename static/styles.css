@@ -930,3 +930,38 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
 .role-guidance{display:grid;gap:8px;padding:13px 14px;margin:4px 0 16px;background:#f4f6f1;border:1px solid #e5e9df;border-radius:8px}.role-guidance p{display:flex;flex-direction:column;gap:3px;margin:0}.role-guidance strong{font-size:11px;color:#29473e}.role-guidance span{font-size:10px;line-height:1.45;color:#7b8980}.payment-history .muted{margin-top:5px}
 
 .employee-row{align-items:center;gap:12px;flex-wrap:wrap}.employee-identity{display:flex;flex:1 1 170px;min-width:150px;flex-direction:column;gap:4px}.employee-identity small{font-size:10px;color:#87918a}.employee-role-form{display:flex;align-items:center;gap:7px;flex:1 1 250px}.employee-role-form select{min-width:0;max-width:210px;height:32px;padding:0 8px;border:1px solid #e4e6dc;border-radius:6px;background:#fffefa;color:#42574b;font:500 10px var(--font)}.employee-role-form button,.employee-row .text-link{white-space:nowrap}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+
+/* NUST crest branding and mobile landing-page refinement */
+.public-brand{gap:12px;min-width:0}
+.public-brand-crest{display:block;flex:none;width:42px;height:48px;object-fit:contain;object-position:center}
+.public-brand>span:last-child{min-width:0}
+.public-brand strong{white-space:nowrap}
+.public-hero-photo .public-hero-copy{max-width:680px}
+.public-hero-photo h1{max-width:680px;text-wrap:balance}
+.public-hero-photo .public-hero-lede{max-width:510px}
+@media(max-width:700px){
+  .public-nav{height:auto;min-height:72px;flex-wrap:wrap;row-gap:10px;padding:11px 0}
+  .public-brand{flex:1 1 100%;gap:10px}
+  .public-brand-crest{width:36px;height:42px}
+  .public-brand strong{font-size:12px}
+  .public-brand small{font-size:9px}
+  .public-nav-actions{width:100%;justify-content:flex-end;gap:12px}
+  .public-nav-actions .public-signin{font-size:11px;white-space:nowrap}
+  .public-nav-actions .public-button{min-height:40px;padding:0 14px;font-size:11px;white-space:nowrap}
+  .public-hero.public-hero-photo{min-height:590px;padding:52px 20px 62px}
+  .public-hero-photo h1{max-width:520px;font-size:clamp(46px,11.5vw,64px);line-height:1.02;letter-spacing:-.065em}
+  .public-hero-photo .public-hero-lede{font-size:13px;line-height:1.7}
+  .public-hero-actions{align-items:stretch;flex-direction:column;gap:11px;max-width:260px}
+  .public-hero-actions form,.public-hero-actions form button,.public-hero-actions .public-text-link{width:100%}
+  .public-hero-actions .public-text-link{min-height:42px;justify-content:center;border:1px solid rgba(255,255,255,.58);border-radius:5px;padding:0 14px}
+  .public-proof{margin-top:25px;max-width:340px;font-size:10px}
+}
+@media(max-width:390px){
+  .public-shell{padding:0 15px}
+  .public-brand strong{font-size:11px}
+  .public-nav-actions{gap:9px}
+  .public-nav-actions .public-signin{font-size:10px}
+  .public-nav-actions .public-button{padding:0 11px;font-size:10px}
+  .public-hero-photo h1{font-size:clamp(43px,11vw,54px)}
+}

@@ -19,8 +19,8 @@
 <main class="public-shell">
   <header class="public-nav">
     <a class="public-brand" href="{{ url_for('public_preview') }}" aria-label="Student Accounts home">
-      <span class="public-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M6 23.5V8.5h4.2l5.8 8 5.8-8H26v15h-4V14l-6 8-6-8v9.5H6Z" fill="currentColor"/></svg></span>
-      <span><strong>Student Accounts</strong><small>Accounts · Invoices · Payments</small></span>
+      <img class="public-brand-crest" src="{{ url_for('static', filename='nust-crest.webp') }}" alt="" width="44" height="52" decoding="async">
+      <span><strong>NUST Student Database</strong><small>Student Accounts · Invoices · Payments</small></span>
     </a>
     <nav class="public-nav-links" aria-label="Main navigation">
       <a href="#platform">Platform</a><a href="#capabilities">Capabilities</a><a href="#about">About</a>
@@ -33,8 +33,7 @@
 
   <section class="public-hero public-hero-photo">
     <div class="public-hero-copy">
-      <img class="nust-hero-crest" src="{{ url_for('static', filename='nust-crest.webp') }}" alt="National University of Science and Technology crest" width="120" height="156" decoding="async" fetchpriority="high">
-      <h1>NUST Student finance,<br><em>brought into focus.</em></h1>
+      <h1>NUST Student<br>Finance</h1>
       <p class="public-hero-lede">A university finance workspace concept for following student accounts, fee invoices and payments from one connected place.</p>
       <div class="public-hero-actions">
         <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-green" type="submit">Explore the demo <span aria-hidden="true">↗</span></button></form>
