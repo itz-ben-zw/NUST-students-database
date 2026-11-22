@@ -340,13 +340,13 @@ def dashboard():
     if employee.get("role") == "payments_clerk":
         return redirect(url_for("payments"))
     demo_mode = employee.get("role") == "demo"
-    invoice_scope = "s.student_no LIKE 'N0%' AND " if demo_mode else ""
+    invoice_scope = "s.student_no ~ '^N0' AND " if demo_mode else ""
     invoices = decorate_invoices(invoice_rows(
         f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
     ))
     currency_totals = summarize_financials(invoices)
     db = get_db()
-    recent_scope = "WHERE p.student_id IN (SELECT id FROM students WHERE student_no LIKE 'N0%')" if demo_mode else ""
+    recent_scope = "WHERE p.student_id IN (SELECT id FROM students WHERE student_no ~ '^N0')" if demo_mode else ""
     recent = db.execute(f"""
       SELECT p.*, s.first_name, s.last_name, s.student_no
       FROM payments p JOIN students s ON s.id=p.student_id
@@ -381,14 +381,14 @@ def students():
     filters = []
     params = ()
     if current_employee().get("role") == "demo":
-        filters.append("s.student_no LIKE 'N0%'")
+        filters.append("s.student_no ~ '^N0'")
     if q:
         filters.append("(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s OR p.name ILIKE %s OR f.name ILIKE %s)")
         params = (f"%{q}%",) * 5
     if filters:
         sql += " WHERE " + " AND ".join(filters)
     rows = get_db().execute(sql + " ORDER BY s.last_name,s.first_name", params).fetchall()
-    invoice_scope = "s.student_no LIKE 'N0%' AND " if current_employee().get("role") == "demo" else ""
+    invoice_scope = "s.student_no ~ '^N0' AND " if current_employee().get("role") == "demo" else ""
     account_invoices = decorate_invoices(invoice_rows(
         f"WHERE {invoice_scope}i.semester_id=(SELECT id FROM academic_semesters WHERE academic_year='2026' AND semester_number=2)"
     ))
@@ -423,7 +423,7 @@ def data_model():
 def invoices_page():
     q = request.args.get("q", "").strip()
     demo_mode = current_employee().get("role") == "demo"
-    where, params = ("WHERE s.student_no LIKE 'N0%'" if demo_mode else ""), ()
+    where, params = ("WHERE s.student_no ~ '^N0'" if demo_mode else ""), ()
     if q:
         search_clause = "(s.student_no ILIKE %s OR s.first_name ILIKE %s OR s.last_name ILIKE %s)"
         where = (where + " AND " if where else "WHERE ") + search_clause
@@ -547,7 +547,7 @@ def payments():
       JOIN programmes p ON p.id=s.programme_id
       JOIN invoices i ON i.student_id=s.id AND i.status!='Void'
       JOIN invoice_lines il ON il.invoice_id=i.id
-      WHERE s.status!='Deferred' AND (%s = false OR s.student_no LIKE 'N0%')
+      WHERE s.status!='Deferred' AND (%s = false OR s.student_no ~ '^N0')
       GROUP BY s.id,s.student_no,s.first_name,s.last_name,p.name,il.currency
       HAVING SUM(il.amount_cents)-COALESCE((
           SELECT SUM(pa.amount_cents)
@@ -565,7 +565,7 @@ def payments():
     recent = db.execute("""
       SELECT p.*,s.first_name,s.last_name,s.student_no
       FROM payments p JOIN students s ON s.id=p.student_id
-      WHERE (%s = false OR p.student_id IN (SELECT id FROM students WHERE student_no LIKE 'N0%'))
+      WHERE (%s = false OR p.student_id IN (SELECT id FROM students WHERE student_no ~ '^N0'))
       ORDER BY p.paid_on DESC,p.id DESC
     """, (current_employee().get("role") == "demo",)).fetchall()
     selected = request.args.get("receipt")
@@ -580,7 +580,7 @@ def payments():
 @app.route("/reports")
 @roles_required("system_admin", "finance_manager", "finance", "accountant", "auditor", "demo")
 def reports():
-    demo_scope = "WHERE s.student_no LIKE 'N0%'" if current_employee().get("role") == "demo" else ""
+    demo_scope = "WHERE s.student_no ~ '^N0'" if current_employee().get("role") == "demo" else ""
     rows = decorate_invoices(invoice_rows(demo_scope))
     totals = {}
     for row in rows:
@@ -589,7 +589,7 @@ def reports():
         item["paid"] += row["paid"]
         item["balance"] += row["balance"]
     faculty_rows = []
-    faculty_filter = "WHERE id IN (SELECT DISTINCT pr.faculty_id FROM students st JOIN programmes pr ON pr.id=st.programme_id WHERE st.student_no LIKE 'N0%')" if current_employee().get("role") == "demo" else ""
+    faculty_filter = "WHERE id IN (SELECT DISTINCT pr.faculty_id FROM students st JOIN programmes pr ON pr.id=st.programme_id WHERE st.student_no ~ '^N0')" if current_employee().get("role") == "demo" else ""
     for faculty in get_db().execute(f"SELECT id,name FROM faculties {faculty_filter} ORDER BY name"):
         group = [row for row in rows if row["faculty_name"] == faculty["name"]]
         faculty_rows.append({"name": faculty["name"], "students": len(group),
@@ -607,7 +607,7 @@ def receipt_page(receipt_no):
       FROM payments p JOIN students s ON s.id=p.student_id
       JOIN programmes pr ON pr.id=s.programme_id JOIN faculties f ON f.id=pr.faculty_id
       WHERE p.receipt_no=%s
-        AND (%s = false OR p.student_id IN (SELECT id FROM students WHERE student_no LIKE 'N0%'))
+        AND (%s = false OR p.student_id IN (SELECT id FROM students WHERE student_no ~ '^N0'))
     """, (receipt_no, current_employee().get("role") == "demo")).fetchone()
     if row is None:
         abort(404)
