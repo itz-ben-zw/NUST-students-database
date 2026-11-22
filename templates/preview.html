@@ -12,7 +12,7 @@
   <meta name="twitter:card" content="summary">
   <style>.nust-hero-crest{display:block;width:clamp(104px,13vw,148px);height:auto;max-height:190px;object-fit:contain;margin:0 auto 1.15rem;filter:drop-shadow(0 8px 18px rgba(15,35,45,.14))}</style>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-capabilities-hero">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261123-mobile-nav-refine">
   <title>Student Accounts | A clearer view of campus finance</title>
 </head>
 <body class="public-site">
@@ -22,25 +22,33 @@
       <img class="public-brand-crest" src="{{ url_for('static', filename='nust-crest.webp') }}" alt="" width="44" height="52" decoding="async">
       <span><strong>NUST Student Database</strong><small>Student Accounts · Invoices · Payments</small></span>
     </a>
-    <nav class="public-nav-links" aria-label="Main navigation">
-      <a href="#platform">Platform</a><a href="#capabilities">Capabilities</a><a href="#about">About</a>
-    </nav>
-    <div class="public-nav-actions">
-      <a class="public-signin" href="{{ url_for('login') }}">Employee sign in</a>
-      <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-dark" type="submit">Open the demo <span aria-hidden="true">↗</span></button></form>
+    <button class="public-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="public-navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="public-navigation" id="public-navigation">
+      <nav class="public-nav-links" aria-label="Main navigation">
+        <a href="#platform">Platform</a><a href="#capabilities">Capabilities</a><a href="#about">About</a>
+      </nav>
+      <div class="public-nav-actions">
+        <a class="public-signin" href="{{ url_for('login') }}">Employee sign in <span aria-hidden="true">↗</span></a>
+      </div>
     </div>
   </header>
 
   <section class="public-hero public-hero-photo">
     <div class="public-hero-copy">
       <h1>NUST Student<br>Finance</h1>
-      <p class="public-hero-lede">A university finance workspace concept for following student accounts, fee invoices and payments from one connected place.</p>
+      <p class="public-hero-lede">A university finance workspace concept for following student accounts, fee invoices, and payments from one connected place.</p>
       <div class="public-hero-actions">
         <form method="post" action="{{ url_for('try_demo') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="public-button public-button-green" type="submit">Explore the demo <span aria-hidden="true">↗</span></button></form>
         <a class="public-text-link" href="#platform">See the platform <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="public-proof"><span class="public-proof-mark">◎</span><span>Designed around traceable records, clear balances and careful access.</span></div>
     </div>
+  </section>
+
+  <section class="public-proof-strip" aria-label="Design principles">
+    <span class="public-proof-mark" aria-hidden="true">◎</span>
+    <p>Designed around traceable records, clear balances, and careful access.</p>
   </section>
 
   <section class="public-heritage" aria-label="Financial detail and data integrity">
@@ -149,6 +157,25 @@
       });
     }, { threshold: 0.16, rootMargin: '0px 0px -35px 0px' });
     revealTargets.forEach(el => observer.observe(el));
+  }
+  const menuToggle = document.querySelector('.public-menu-toggle');
+  const navigation = document.querySelector('#public-navigation');
+  if (menuToggle && navigation) {
+    const closeMenu = () => {
+      navigation.classList.remove('is-open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle.setAttribute('aria-label', 'Open navigation menu');
+    };
+    menuToggle.addEventListener('click', () => {
+      const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+      navigation.classList.toggle('is-open', !isOpen);
+      menuToggle.setAttribute('aria-expanded', String(!isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Open navigation menu' : 'Close navigation menu');
+    });
+    navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMenu();
+    });
   }
   const demo = document.querySelector('.finance-demo');
   if (!demo || reduceMotion) return;

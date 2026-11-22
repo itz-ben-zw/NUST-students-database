@@ -965,3 +965,58 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}
   .public-nav-actions .public-button{padding:0 11px;font-size:10px}
   .public-hero-photo h1{font-size:clamp(43px,11vw,54px)}
 }
+
+
+/* Refined navigation, hero contrast, and mobile tap targets */
+.public-nav{position:relative;z-index:20}
+.public-navigation{display:flex;align-items:center;justify-content:flex-end;gap:clamp(18px,3vw,34px);flex:1;min-width:0}
+.public-nav-links{gap:clamp(16px,2.5vw,30px)}
+.public-nav-actions{gap:0}
+.public-signin{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 13px;border:1px solid #d8e3dc;border-radius:5px;white-space:nowrap}
+.public-signin:hover{background:#f2f7f3;border-color:#a9c5b3}
+.public-menu-toggle{display:none}
+.public-hero.public-hero-photo::before{background:linear-gradient(90deg,rgba(5,24,30,.91) 0%,rgba(5,24,30,.83) 48%,rgba(5,24,30,.66) 100%),linear-gradient(0deg,rgba(5,24,30,.72) 0%,rgba(5,24,30,.08) 78%)}
+.public-hero-photo .public-hero-lede{color:#f2f6f4}
+.public-hero-actions{gap:18px}
+.public-hero-actions .public-text-link{min-height:46px;padding:0 19px;border:1px solid rgba(255,255,255,.8);border-radius:5px;background:rgba(8,27,31,.52);color:#fff;transition:background .2s ease,border-color .2s ease}
+.public-hero-actions .public-text-link:hover{background:rgba(255,255,255,.16);border-color:#fff;color:#fff}
+.public-hero-actions .public-button-green{min-height:48px;padding:0 22px}
+.public-proof-strip{display:flex;align-items:center;justify-content:center;gap:12px;min-height:76px;padding:17px 22px;background:#f0f5f1;border-bottom:1px solid #e0e9e2;color:#385b4a}
+.public-proof-strip .public-proof-mark{border-color:#c9dbce;color:#327456}
+.public-proof-strip p{margin:0;font-size:12px;line-height:1.6;font-weight:550}
+@media(max-width:700px){
+  .public-nav{height:auto;min-height:72px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0;padding:10px 0}
+  .public-brand{flex:1 1 auto;min-width:0;gap:9px}
+  .public-brand-crest{width:36px;height:42px}
+  .public-brand strong{font-size:12px}
+  .public-brand small{font-size:9px}
+  .public-menu-toggle{display:flex;flex:none;width:44px;height:44px;align-items:center;justify-content:center;flex-direction:column;gap:5px;margin-left:10px;padding:0;border:1px solid #d5e1d9;border-radius:6px;background:#fff;cursor:pointer}
+  .public-menu-toggle span{display:block;width:18px;height:2px;border-radius:2px;background:#244d40;transition:transform .2s ease,opacity .2s ease}
+  .public-menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(7px) rotate(45deg)}
+  .public-menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+  .public-menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-7px) rotate(-45deg)}
+  .public-navigation{display:none;flex:1 1 100%;width:100%;min-width:0;align-items:stretch;flex-direction:column;gap:0;padding:9px 0 5px}
+  .public-navigation.is-open{display:flex}
+  .public-nav-links{display:flex;align-items:stretch;flex-direction:column;gap:0;width:100%}
+  .public-nav-links a{display:flex;align-items:center;min-height:48px;padding:0 5px;border-bottom:1px solid #edf1ed;font-size:13px}
+  .public-nav-actions{width:100%;padding-top:10px}
+  .public-nav-actions .public-signin{width:100%;min-height:48px;justify-content:center;font-size:13px}
+  .public-hero.public-hero-photo{min-height:560px;padding:55px 20px 58px}
+  .public-hero-photo h1{font-size:clamp(46px,11.5vw,64px);line-height:1.02}
+  .public-hero-photo .public-hero-lede{font-size:13px;line-height:1.75}
+  .public-hero-actions{align-items:stretch;flex-direction:column;gap:16px;max-width:300px}
+  .public-hero-actions form,.public-hero-actions form button,.public-hero-actions .public-text-link{width:100%}
+  .public-hero-actions .public-button-green,.public-hero-actions .public-text-link{min-height:52px;padding:0 18px;justify-content:center}
+  .public-proof-strip{justify-content:flex-start;min-height:76px;padding:17px 20px}
+  .public-proof-strip p{font-size:11px}
+}
+@media(max-width:390px){
+  .public-shell{padding:0 15px}
+  .public-brand strong{font-size:11px}
+  .public-brand small{font-size:8px}
+  .public-menu-toggle{width:42px;height:42px}
+  .public-hero-photo h1{font-size:clamp(43px,11vw,54px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .public-menu-toggle span,.public-hero-actions .public-text-link{transition:none}
+}
