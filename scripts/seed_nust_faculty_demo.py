@@ -40,6 +40,7 @@ def main() -> int:
                 for programme in programmes:
                     name = programme + " (Demo)"
                     cur.execute("INSERT INTO programmes(name,faculty_id,award_level) VALUES(%s,%s,'Undergraduate') ON CONFLICT(name) DO NOTHING", (name, faculty_ids[faculty]))
+                    cur.execute("UPDATE programmes SET faculty_id=%s WHERE name=%s", (faculty_ids[faculty], name))
                     cur.execute("SELECT id FROM programmes WHERE name=%s", (name,))
                     programme_ids[(faculty, name)] = cur.fetchone()["id"]
             sponsor_ids = {}
