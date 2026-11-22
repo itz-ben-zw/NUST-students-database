@@ -44,6 +44,7 @@ def main() -> int:
     env["DATABASE_URL"] = database_url
     env["ALLOW_DEMO_SEED"] = "true"
     subprocess.run([sys.executable, "scripts/seed_demo_data.py"], check=True, env=env)
+    subprocess.run([sys.executable, "scripts/seed_nust_faculty_demo.py"], check=True, env=env)
     print("Fictional demo data reset and reseeded successfully.")
     return 0
 
