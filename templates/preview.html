@@ -10,6 +10,7 @@
   <meta property="og:description" content="Explore a connected student accounts and finance workspace.">
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta name="twitter:card" content="summary">
+  <style>.nust-hero-crest{display:block;width:clamp(104px,13vw,148px);height:auto;max-height:190px;object-fit:contain;margin:0 auto 1.15rem;filter:drop-shadow(0 8px 18px rgba(15,35,45,.14))}</style>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20261116-capabilities-hero">
   <title>Student Accounts | A clearer view of campus finance</title>
@@ -32,6 +33,7 @@
 
   <section class="public-hero public-hero-photo">
     <div class="public-hero-copy">
+      <img class="nust-hero-crest" src="{{ url_for('static', filename='nust-crest.webp') }}" alt="National University of Science and Technology crest" width="120" height="156" decoding="async" fetchpriority="high">
       <h1>NUST Student finance,<br><em>brought into focus.</em></h1>
       <p class="public-hero-lede">A university finance workspace concept for following student accounts, fee invoices and payments from one connected place.</p>
       <div class="public-hero-actions">
