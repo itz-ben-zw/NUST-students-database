@@ -411,6 +411,13 @@ def students():
     return render_template("students.html", students=rows, balances=balances, account_states=account_states, q=q)
 
 
+@app.route("/data-model")
+@roles_required("system_admin", "finance_manager", "finance", "accountant", "student_records", "auditor", "demo")
+def data_model():
+    """Show the relational structure behind student accounts and finance records."""
+    return render_template("data_model.html")
+
+
 @app.route("/invoices")
 @roles_required("system_admin", "finance_manager", "finance", "accountant", "auditor", "demo")
 def invoices_page():

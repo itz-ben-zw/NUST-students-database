@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Data model{% endblock %}
+{% block crumb %}Data model{% endblock %}
+{% block content %}
+<section class="data-model-page">
+  <header class="data-model-heading">
+    <div><div class="eyebrow">DATABASE STRUCTURE</div><h1>How the records connect</h1><p>The relational model behind student identities, academic programmes, invoices, and payments. Primary keys identify records; foreign keys connect them.</p></div>
+    <span class="data-model-note">PostgreSQL · Relational schema</span>
+  </header>
+  <section class="panel erd-panel" aria-labelledby="erd-title">
+    <div class="erd-panel-heading"><div><div class="section-kicker">ENTITY RELATIONSHIP DIAGRAM</div><h2 id="erd-title">Core student finance records</h2></div><span class="section-kicker">CORE ENTITIES</span></div>
+    <div class="erd-canvas" role="region" aria-label="Scrollable entity relationship diagram" tabindex="0">
+      <div class="erd-grid">
+        <article class="erd-entity"><header><strong>faculties</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> name · unique</li></ul></article>
+        <article class="erd-entity"><header><strong>programmes</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b class="fk">FK</b> faculty_id</li><li><b></b> name, award_level</li></ul></article>
+        <article class="erd-entity"><header><strong>students</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> student_no · unique</li><li><b class="fk">FK</b> programme_id</li><li><b></b> first_name, last_name, status</li></ul></article>
+        <article class="erd-entity"><header><strong>academic_semesters</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> academic_year, semester_number</li><li><b></b> starts_on, ends_on</li></ul></article>
+        <article class="erd-entity"><header><strong>invoices</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> invoice_no · unique</li><li><b class="fk">FK</b> student_id, semester_id</li><li><b></b> issued_on, due_on, status</li></ul></article>
+        <article class="erd-entity"><header><strong>invoice_lines</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b class="fk">FK</b> invoice_id, fee_type_id</li><li><b></b> description, amount_cents, currency</li></ul></article>
+        <article class="erd-entity"><header><strong>fee_types</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> name · unique</li><li><b></b> description</li></ul></article>
+        <article class="erd-entity"><header><strong>payments</strong><small>ENTITY</small></header><ul><li><b class="pk">PK</b> id</li><li><b></b> receipt_no · unique</li><li><b class="fk">FK</b> student_id</li><li><b></b> paid_on, amount_cents, method</li></ul></article>
+        <article class="erd-entity"><header><strong>payment_allocations</strong><small>JUNCTION</small></header><ul><li><b class="pk">PK</b> payment_id</li><li><b class="pk">PK</b> invoice_id</li><li><b></b> amount_cents</li></ul></article>
+      </div>
+    </div>
+    <div class="erd-relations" aria-label="Relationship cardinalities">
+      <div class="erd-relation"><strong>faculties</strong><span>1 → many</span><strong>programmes</strong></div>
+      <div class="erd-relation"><strong>programmes</strong><span>1 → many</span><strong>students</strong></div>
+      <div class="erd-relation"><strong>students</strong><span>1 → many</span><strong>invoices</strong></div>
+      <div class="erd-relation"><strong>academic_semesters</strong><span>1 → many</span><strong>invoices</strong></div>
+      <div class="erd-relation"><strong>invoices</strong><span>1 → many</span><strong>invoice_lines</strong></div>
+      <div class="erd-relation"><strong>fee_types</strong><span>1 → many</span><strong>invoice_lines</strong></div>
+      <div class="erd-relation"><strong>students</strong><span>1 → many</span><strong>payments</strong></div>
+      <div class="erd-relation"><strong>payments</strong><span>many ↔ many</span><strong>invoices</strong></div>
+    </div>
+    <div class="erd-legend"><span><b>PK</b> Primary key</span><span><b style="color:#4d8666">FK</b> Foreign key</span><span>Junction table resolves a many-to-many relationship</span></div>
+  </section>
+  <section class="panel erd-supporting"><h2>Supporting entities</h2><p><strong>semester_fees</strong> defines faculty fees by semester and fee type. <strong>sponsors</strong> and <strong>student_sponsors</strong> record student sponsorships. <strong>employee_profiles</strong>, <strong>audit_logs</strong>, and <strong>employee_web_sessions</strong> support controlled staff access, traceability, and secure sessions.</p></section>
+</section>
+{% endblock %}
