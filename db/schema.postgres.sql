@@ -95,7 +95,7 @@ create table public.employee_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   full_name text,
-  role text not null check (role in ('system_admin','finance','student_records','auditor')),
+  role text not null check (role in ('system_admin','finance_manager','finance','accountant','payments_clerk','student_records','auditor')),
   is_active boolean not null default true,
   invited_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),

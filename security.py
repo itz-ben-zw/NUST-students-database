@@ -15,7 +15,6 @@ from jwt import PyJWKClient
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
-INITIAL_ADMIN_EMAIL = os.environ.get("INITIAL_ADMIN_EMAIL", "chigodobenji@gmail.com").strip().lower()
 JWT_ISSUER = f"{SUPABASE_URL}/auth/v1" if SUPABASE_URL else ""
 JWKS_URL = f"{JWT_ISSUER}/.well-known/jwks.json" if JWT_ISSUER else ""
 _jwks_client = None
@@ -111,56 +110,6 @@ def get_authenticated_user(access_token: str) -> dict:
     )
     response.raise_for_status()
     return response.json()
-
-
-def ensure_initial_admin_profile(user: dict) -> dict:
-    email = (user.get("email") or "").strip().lower()
-    identities = user.get("identities") or []
-    providers = set((user.get("app_metadata") or {}).get("providers") or [])
-    provider = (user.get("app_metadata") or {}).get("provider")
-    if provider:
-        providers.add(provider)
-    google_identity = any(identity.get("provider") == "google" for identity in identities)
-    if email != INITIAL_ADMIN_EMAIL or not user.get("email_confirmed_at") or not (google_identity or "google" in providers):
-        raise ValueError("This Google account is not approved for administrator access.")
-    user_id = user.get("id")
-    if not user_id:
-        raise AuthenticationUnavailable("Supabase did not return the authenticated user ID.")
-    existing = get_employee_profile(user_id)
-    if existing:
-        if (existing.get("email") or "").lower() != email:
-            raise ValueError("The authenticated email does not match the approved employee profile.")
-        return existing
-    full_name = ((user.get("user_metadata") or {}).get("full_name")
-                 or (user.get("user_metadata") or {}).get("name")
-                 or "System Administrator")
-    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
-               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
-               "Content-Type": "application/json", "Prefer": "return=representation"}
-    response = requests.post(
-        f"{SUPABASE_URL}/rest/v1/employee_profiles", headers=headers,
-        json={"user_id": user_id, "email": email, "full_name": full_name,
-              "role": "system_admin", "is_active": True}, timeout=15,
-    )
-    if response.status_code == 409:
-        existing = get_employee_profile(user_id)
-        if existing:
-            return existing
-    response.raise_for_status()
-    rows = response.json()
-    if not rows:
-        raise AuthenticationUnavailable("The administrator profile was not created.")
-    profile = rows[0]
-    audit = requests.post(
-        f"{SUPABASE_URL}/rest/v1/audit_logs",
-        headers={**headers, "Prefer": "return=minimal"},
-        json={"actor_user_id": user_id, "action": "employee.initial_admin_provisioned",
-              "entity_type": "employee_profile", "entity_id": user_id,
-              "details": {"email": email, "role": "system_admin", "provider": "google"}},
-        timeout=12,
-    )
-    audit.raise_for_status()
-    return profile
 
 
 def verify_access_token(token: str) -> dict:
