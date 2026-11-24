@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant{% endblock %}
+{% block crumb %}AI Assistant{% endblock %}
+{% block content %}
+<section class="dashboard-welcome">
+  <div>
+    <p class="page-context">Gemini · Read-only mode</p>
+    <h1>AI Assistant</h1>
+    <p>Ask questions about student records, invoices and payments available to your role.</p>
+  </div>
+  <span class="status-chip paid">Read only</span>
+</section>
+<section class="assistant-layout panel">
+  <div class="assistant-intro">
+    <div class="assistant-mark" aria-hidden="true">✦</div>
+    <div>
+      <h2>How can I help?</h2>
+      <p>Answers are based on approved database lookups. The assistant cannot change records or record payments.</p>
+    </div>
+  </div>
+  <div class="assistant-prompts" aria-label="Example questions">
+    <button type="button" class="assistant-prompt" data-prompt="Give me an overview of outstanding balances by currency.">Outstanding balances by currency</button>
+    <button type="button" class="assistant-prompt" data-prompt="How many students are in the database?">Student records</button>
+    <button type="button" class="assistant-prompt" data-prompt="Explain how invoices and payment allocations work in this system.">Explain the database</button>
+  </div>
+  <div id="assistant-messages" class="assistant-messages" role="log" aria-live="polite" aria-label="Conversation">
+    <div class="assistant-message assistant-message-bot"><strong>NUST AI Assistant</strong><p>I can help explore the student accounts demo. I will only use information your account is authorised to access.</p></div>
+  </div>
+  <form id="assistant-form" class="assistant-compose">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="sr-only" for="assistant-question">Your question</label>
+    <textarea id="assistant-question" name="question" rows="2" maxlength="2000" placeholder="Ask about student records, invoices or payments…" required></textarea>
+    <button class="button primary" type="submit">Send <span aria-hidden="true">↗</span></button>
+  </form>
+  <p id="assistant-status" class="assistant-status" role="status">AI-generated answers can be inaccurate. Verify important financial information in the source records.</p>
+</section>
+<script src="{{ url_for('static', filename='assistant.js') }}" defer></script>
+{% endblock %}
