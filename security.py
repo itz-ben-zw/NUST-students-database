@@ -462,3 +462,136 @@ def set_employee_active(user_id: str, active: bool, actor_id: str) -> None:
         timeout=12,
     )
     audit.raise_for_status()
+
+
+# Student authentication is deliberately separate from employee authentication.
+# Access is granted only when a verified Supabase Auth UUID already has a
+# server-managed row in student_auth_links.
+def sign_in_student_with_password(email: str, password: str) -> dict:
+    if not _config_ready():
+        raise AuthenticationUnavailable("Student sign-in has not been configured.")
+    response = requests.post(
+        f"{SUPABASE_URL}/auth/v1/token",
+        params={"grant_type": "password"},
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"email": email, "password": password},
+        timeout=12,
+    )
+    if response.status_code in (400, 401):
+        raise ValueError("Email or password is incorrect.")
+    response.raise_for_status()
+    payload = response.json()
+    token = payload.get("access_token")
+    if not token:
+        raise AuthenticationUnavailable("Supabase did not return a student session.")
+    claims = verify_access_token(token)
+    auth_user = get_authenticated_user(token)
+    if auth_user.get("id") != claims.get("sub"):
+        raise ValueError("The student identity could not be verified.")
+    user_id = claims["sub"]
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"}
+    linked = requests.get(
+        f"{SUPABASE_URL}/rest/v1/student_auth_links",
+        params={"select": "student_id", "auth_user_id": f"eq.{user_id}", "limit": "1"},
+        headers=headers, timeout=12,
+    )
+    linked.raise_for_status()
+    rows = linked.json()
+    if not rows:
+        raise ValueError("This account is not linked to a student record. Contact the system administrator.")
+    return {"token": token, "user_id": user_id, "student_id": rows[0]["student_id"]}
+
+
+def create_student_web_session(access_token: str, user_id: str, student_id: int) -> str:
+    opaque_id = secrets.token_urlsafe(40)
+    key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+    claims = verify_access_token(access_token)
+    if claims.get("sub") != user_id:
+        raise ValueError("Student session identity mismatch.")
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+               "Content-Type": "application/json", "Prefer": "return=minimal"}
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/student_web_sessions",
+        headers=headers,
+        json={"session_key_hash": key_hash, "auth_user_id": user_id,
+              "student_id": student_id, "access_token": access_token,
+              "expires_at": datetime.fromtimestamp(claims["exp"], timezone.utc).isoformat()},
+        timeout=12,
+    )
+    response.raise_for_status()
+    return opaque_id
+
+
+def current_student() -> dict | None:
+    if "student" in g:
+        return g.student
+    g.student = None
+    opaque_id = session.get("student_web_session_id")
+    if not opaque_id:
+        return None
+    key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+    headers = {"apikey": SUPABASE_SERVICE_ROLE_KEY,
+               "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"}
+    try:
+        stored_response = requests.get(
+            f"{SUPABASE_URL}/rest/v1/student_web_sessions",
+            params={"select": "auth_user_id,student_id,access_token",
+                    "session_key_hash": f"eq.{key_hash}", "limit": "1"},
+            headers=headers, timeout=12,
+        )
+        stored_response.raise_for_status()
+        rows = stored_response.json()
+        if not rows:
+            clear_student_session()
+            return None
+        stored = rows[0]
+        claims = verify_access_token(stored["access_token"])
+        if claims.get("sub") != stored["auth_user_id"]:
+            clear_student_session()
+            return None
+        link_response = requests.get(
+            f"{SUPABASE_URL}/rest/v1/student_auth_links",
+            params={"select": "student_id", "auth_user_id": f"eq.{stored['auth_user_id']}", "limit": "1"},
+            headers=headers, timeout=12,
+        )
+        link_response.raise_for_status()
+        links = link_response.json()
+        if not links or int(links[0]["student_id"]) != int(stored["student_id"]):
+            clear_student_session()
+            return None
+        g.student = {"user_id": stored["auth_user_id"], "student_id": stored["student_id"],
+                     "role": "student", "is_active": True}
+    except (ValueError, AuthenticationUnavailable, requests.RequestException):
+        clear_student_session()
+    return g.student
+
+
+def clear_student_session() -> None:
+    opaque_id = session.get("student_web_session_id")
+    if opaque_id and _config_ready():
+        key_hash = hashlib.sha256(opaque_id.encode("utf-8")).hexdigest()
+        try:
+            response = requests.delete(
+                f"{SUPABASE_URL}/rest/v1/student_web_sessions",
+                params={"session_key_hash": f"eq.{key_hash}"},
+                headers={"apikey": SUPABASE_SERVICE_ROLE_KEY,
+                         "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}"},
+                timeout=12,
+            )
+            response.raise_for_status()
+        except requests.RequestException:
+            pass
+    session.pop("student_web_session_id", None)
+    g.pop("student", None)
+
+
+def student_login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if current_student() is None:
+            return redirect(url_for("student_portal.student_login",
+                                    next=request.full_path if request.query_string else request.path))
+        return view(*args, **kwargs)
+    return wrapped
