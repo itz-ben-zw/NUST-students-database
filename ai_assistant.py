@@ -52,6 +52,14 @@ EMPLOYEE_TOOLS = [
             "required": ["student_number"],
         },
     },
+        {
+        "name": "get_student_count",
+        "description": "Count student records visible to the current employee role. Only use for student-records-authorized employee roles.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {},
+        },
+    },
 ]
 
 FINANCE_ROLES = {"system_admin", "finance_manager", "finance", "accountant", "auditor"}
@@ -172,6 +180,19 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
             accounts.append(dict(item) | {"outstanding_cents": max(0, billed - paid)})
         return {"student_number": student_number, "accounts": accounts}
 
+    if name == "get_student_count":
+        if role not in STUDENT_RECORD_ROLES and role != "demo":
+            return {"error": "Your account is not authorised to view student record statistics."}
+        row = conn.execute(
+            """
+            SELECT COUNT(*)::int AS student_count
+            FROM students
+            WHERE (%s = false OR student_no ~ '^N0')
+            """,
+            (demo_scope,),
+        ).fetchone()
+        return {"student_count": int(row["student_count"])}
+
     return {"error": "That data tool is not available."}
 
 
@@ -197,6 +218,7 @@ def ask_assistant(question: str, actor: dict[str, Any], conn: Any) -> str:
         allowed.append(EMPLOYEE_TOOLS[0])
     if role in STUDENT_RECORD_ROLES or role == "demo":
         allowed.append(EMPLOYEE_TOOLS[1])
+        allowed.append(EMPLOYEE_TOOLS[3])
     if role in FINANCE_ROLES or role in STUDENT_RECORD_ROLES or role == "demo":
         allowed.append(EMPLOYEE_TOOLS[2])
 
@@ -256,5 +278,5 @@ def assistant_capabilities(actor: dict[str, Any]) -> list[str]:
         capabilities += ["Summarise invoices, payments and outstanding balances by currency.",
                           "Look up an individual student account by student number."]
     if role in STUDENT_RECORD_ROLES or role == "demo":
-        capabilities += ["Search student records by name, number or programme."]
+        capabilities += ["Search student records by name, number or programme.", "Count student records in the database."]
     return capabilities
