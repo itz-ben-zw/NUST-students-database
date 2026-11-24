@@ -9,6 +9,7 @@ from __future__ import annotations
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, session, url_for
 import requests
 
+from ai_assistant import ask_assistant, AssistantConfigurationError
 from security import (
     AuthenticationUnavailable,
     clear_student_session,
@@ -128,3 +129,39 @@ def student_dashboard():
         payments=payments,
         totals=list(totals.values()),
     )
+
+
+@student_portal.get("/student/assistant")
+@student_login_required
+def student_assistant():
+    return render_template("student_assistant.html")
+
+
+@student_portal.post("/api/student/assistant/chat")
+@student_login_required
+def student_assistant_chat():
+    payload = request.get_json(silent=True) or {}
+    question = payload.get("question", "")
+    if not isinstance(question, str):
+        return {"error": "Question must be text."}, 400
+    db = g.db
+    try:
+        db.execute("SET TRANSACTION READ ONLY")
+        actor = current_student()
+        answer = ask_assistant(question, actor, db)
+        db.rollback()
+        return {"answer": answer}, 200
+    except ValueError as exc:
+        db.rollback()
+        return {"error": str(exc)}, 400
+    except PermissionError as exc:
+        db.rollback()
+        return {"error": str(exc)}, 403
+    except AssistantConfigurationError as exc:
+        db.rollback()
+        return {"error": str(exc)}, 503
+    except Exception:
+        db.rollback()
+        from flask import current_app
+        current_app.logger.exception("Student AI assistant request failed.")
+        return {"error": "The assistant is temporarily unavailable. Please try again."}, 502
