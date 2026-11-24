@@ -124,3 +124,33 @@ must remain disabled.
 
 The project contains fictional academic demonstration records and is not an
 official NUST system. Do not enter real student, identity, or payment data.
+
+
+## Student portal (feature branch)
+
+The student portal is a separate sign-in surface at `/student/login`. A successful sign-in requires all three conditions:
+
+1. The person authenticates with Supabase Auth using their own email and password.
+2. The authenticated Supabase UUID already exists in `public.student_auth_links`.
+3. The link points to exactly one existing student record.
+
+Students cannot self-link by entering a student number, email address, or other personal detail. The Flask server resolves the student ID from the verified Auth UUID and uses that server-side ID for every dashboard query. The dashboard currently shows the linked student's profile, invoices, balances, and recent payments. It does not expose employee reports, other student records, or payment-management actions.
+
+### Enabling a student account
+
+Apply the new migration `supabase/migrations/20261124000000_student_auth_links.sql` only after reviewing it in the Supabase SQL editor. It creates the server-managed identity mapping and opaque student web-session table. It has not been applied automatically by this repository workflow.
+
+A system administrator must first create or invite the student's Supabase Auth account through a verified process, confirm the student's identity against the institution's authoritative records, and then insert the mapping using the Auth user's UUID and the existing student row's database ID. Example SQL for an administrator after verification:
+
+```sql
+INSERT INTO public.student_auth_links (auth_user_id, student_id, linked_by)
+VALUES (
+  'AUTH-USER-UUID-VERIFIED-BY-ADMIN',
+  12345,
+  'ADMIN-AUTH-USER-UUID'
+);
+```
+
+Replace the example values with verified identifiers. Do not expose service-role credentials or grant students direct access to either session table or the identity-link table. If a link is incorrect, an administrator must correct it before the student signs in.
+
+Student login uses Supabase Auth password authentication. Student Google OAuth, self-service registration, administrator linking UI, and student access to Gemini are not enabled in this milestone. Employee login and employee dashboard permissions remain separate.
