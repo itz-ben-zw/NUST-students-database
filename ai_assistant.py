@@ -5,7 +5,6 @@ implemented as a fixed, parameterized SELECT; model output is never SQL.
 """
 from __future__ import annotations
 
-import json
 import os
 from typing import Any
 
@@ -72,41 +71,40 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
         if role not in FINANCE_ROLES:
             return {"error": "Your account is not authorised to view finance-wide summaries."}
         academic_year = str(args.get("academic_year", "")).strip()
-        params: tuple[Any, ...] = (academic_year, academic_year, demo_scope)
         rows = conn.execute(
             """
-            SELECT il.currency,
-                   COALESCE(SUM(il.amount_cents), 0)::bigint AS billed_cents,
-                   COALESCE(SUM((
-                       SELECT COALESCE(SUM(pa.amount_cents), 0)
-                       FROM payment_allocations pa
-                       JOIN payments pay ON pay.id = pa.payment_id
-                       WHERE pa.invoice_id = i.id AND pay.currency = il.currency
-                   )), 0)::bigint AS paid_cents,
+            WITH line_totals AS (
+                SELECT invoice_id, currency, SUM(amount_cents)::bigint AS billed_cents
+                FROM invoice_lines GROUP BY invoice_id, currency
+            ),
+            payment_totals AS (
+                SELECT pa.invoice_id, pay.currency, SUM(pa.amount_cents)::bigint AS paid_cents
+                FROM payment_allocations pa JOIN payments pay ON pay.id = pa.payment_id
+                GROUP BY pa.invoice_id, pay.currency
+            )
+            SELECT lt.currency,
+                   COALESCE(SUM(lt.billed_cents), 0)::bigint AS billed_cents,
+                   COALESCE(SUM(pt.paid_cents), 0)::bigint AS paid_cents,
                    COUNT(DISTINCT i.student_id)::int AS students
             FROM invoices i
-            JOIN invoice_lines il ON il.invoice_id = i.id
+            JOIN line_totals lt ON lt.invoice_id = i.id
             JOIN students s ON s.id = i.student_id
             JOIN academic_semesters sem ON sem.id = i.semester_id
+            LEFT JOIN payment_totals pt ON pt.invoice_id = i.id AND pt.currency = lt.currency
             WHERE (%s = '' OR sem.academic_year = %s)
               AND (%s = false OR s.student_no ~ '^N0')
               AND i.status <> 'Void'
-            GROUP BY il.currency
-            ORDER BY il.currency
-            """,
-            params,
+            GROUP BY lt.currency ORDER BY lt.currency
+            """
+            (academic_year, academic_year, demo_scope),
         ).fetchall()
         result = []
         for row in rows:
             billed = int(row["billed_cents"])
             paid = int(row["paid_cents"])
-            result.append({
-                "currency": row["currency"],
-                "billed_cents": billed,
-                "paid_cents": paid,
-                "outstanding_cents": max(0, billed - paid),
-                "students": int(row["students"]),
-            })
+            result.append({"currency": row["currency"], "billed_cents": billed,
+                           "paid_cents": paid, "outstanding_cents": max(0, billed - paid),
+                           "students": int(row["students"])})
         return {"totals_by_currency": result, "academic_year": academic_year or "all"}
 
     if name == "search_students":
