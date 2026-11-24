@@ -96,3 +96,31 @@ Set these environment variables in Render's private Environment settings:
 | `DATABASE_URL` | Supabase PostgreSQL connection string with `sslmode=require` or stronger |
 
 Never place the service-role key or database connection string in browser code, GitHub, or chat. The public `/preview` page is viewable before database credentials are configured; employee sign-in and database-backed pages require all private variables and an authorised employee profile.
+
+## AI Assistant v1 (in development)
+
+The AI Assistant uses the Google Gemini API through the official `google-genai`
+Python SDK. It is a read-only feature: Gemini may request only server-defined,
+parameterized SELECT tools. The application does not accept SQL from the model,
+does not expose database credentials to the browser, and runs each assistant
+request in a read-only PostgreSQL transaction.
+
+Configure `GEMINI_API_KEY` as a private server environment variable. Optionally
+set `GEMINI_MODEL`; the default is `gemini-2.5-flash`. Never commit the key or
+place it in frontend JavaScript.
+
+Current employee access follows the existing employee role model. Finance
+summaries are limited to finance-authorized roles; student searches are limited
+to student-records-authorized roles. Demo access remains scoped to DEMO-prefixed
+student numbers.
+
+**Student self-service is not enabled yet.** The current application has no
+student sign-in or verified link between a Supabase Auth user and a student
+record. A migration is included as identity-linking groundwork, but it must be
+reviewed and applied only with an approved student identity onboarding process.
+Do not infer identity from a typed student number or an email address supplied
+in chat. Until that workflow is implemented, student access to the AI assistant
+must remain disabled.
+
+The project contains fictional academic demonstration records and is not an
+official NUST system. Do not enter real student, identity, or payment data.
