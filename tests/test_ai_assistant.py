@@ -68,3 +68,35 @@ def test_finance_role_cannot_get_student_count():
     result = _tool_result(conn, "get_student_count", {}, {"role": "finance"})
     assert "error" in result
     assert conn.calls == []
+
+def test_student_assistant_can_only_query_its_linked_student_id():
+    conn = FakeConnection(rows=[{
+        "student_no": "N000001Y", "first_name": "Demo", "last_name": "Student",
+        "status": "Registered", "programme": "Informatics", "faculty": "Computing",
+        "invoice_no": "INV-1", "issued_on": "2026-01-01", "due_on": "2026-02-01",
+        "academic_year": "2026", "semester_number": 1, "currency": "USD",
+        "billed_cents": 10000, "paid_cents": 2500,
+    }])
+    result = _tool_result(conn, "get_my_student_account", {}, {
+        "role": "student", "student_id": 42,
+    })
+    assert result["student"]["student_number"] == "N000001Y"
+    assert result["accounts"][0]["outstanding_cents"] == 7500
+    assert "WHERE s.id = %s" in conn.calls[0][0]
+    assert conn.calls[0][1] == (42,)
+
+
+def test_student_assistant_rejects_missing_verified_student_id():
+    conn = FakeConnection()
+    result = _tool_result(conn, "get_my_student_account", {}, {"role": "student"})
+    assert "error" in result
+    assert conn.calls == []
+
+
+def test_student_role_cannot_use_employee_wide_student_search():
+    conn = FakeConnection()
+    result = _tool_result(conn, "search_students", {"query": "someone"}, {
+        "role": "student", "student_id": 42,
+    })
+    assert "error" in result
+    assert conn.calls == []
