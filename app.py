@@ -21,6 +21,7 @@ from security import (AuthenticationUnavailable, create_web_session, current_emp
                       login_required, roles_required, sign_in_with_password,
                       create_google_pkce_pair, google_authorize_url, exchange_google_code,
                       get_authenticated_user, get_employee_profile, ensure_initial_admin_profile)
+from student_portal import student_portal
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 app = Flask(__name__)
@@ -56,7 +57,8 @@ def healthz():
 
 @app.context_processor
 def inject_employee():
-    return {"current_employee": current_employee()}
+    from security import current_student
+    return {"current_employee": current_employee(), "current_student": current_student()}
 
 @app.get("/preview")
 def public_preview():
@@ -664,6 +666,9 @@ def ai_assistant_chat():
             db.rollback()
         app.logger.exception("AI assistant request failed.")
         return {"error": "The assistant is temporarily unavailable. Please try again."}, 502
+
+
+app.register_blueprint(student_portal)
 
 
 if __name__ == "__main__":
