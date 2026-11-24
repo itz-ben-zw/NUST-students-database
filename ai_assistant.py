@@ -62,6 +62,14 @@ EMPLOYEE_TOOLS = [
     },
 ]
 
+STUDENT_TOOLS = [
+    {
+        "name": "get_my_student_account",
+        "description": "Get the signed-in student's own profile, invoices, payments and balances. The server determines the student identity; never ask for or supply a student number.",
+        "parameters": {"type": "OBJECT", "properties": {}},
+    },
+]
+
 FINANCE_ROLES = {"system_admin", "finance_manager", "finance", "accountant", "auditor"}
 STUDENT_RECORD_ROLES = {"system_admin", "student_records", "auditor"}
 
@@ -193,6 +201,49 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
         ).fetchone()
         return {"student_count": int(row["student_count"])}
 
+    if name == "get_my_student_account":
+        if role != "student" or not actor.get("student_id"):
+            return {"error": "This tool is available only to a verified student session."}
+        rows = conn.execute(
+            """
+            SELECT s.student_no, s.first_name, s.last_name, s.status,
+                   p.name AS programme, f.name AS faculty,
+                   i.invoice_no, i.issued_on, i.due_on,
+                   sem.academic_year, sem.semester_number,
+                   il.currency,
+                   SUM(il.amount_cents)::bigint AS billed_cents,
+                   COALESCE((
+                       SELECT SUM(pa.amount_cents)
+                       FROM payment_allocations pa
+                       JOIN payments pay ON pay.id = pa.payment_id
+                       WHERE pa.invoice_id = i.id AND pay.currency = il.currency
+                   ), 0)::bigint AS paid_cents
+            FROM students s
+            JOIN programmes p ON p.id = s.programme_id
+            JOIN faculties f ON f.id = p.faculty_id
+            LEFT JOIN invoices i ON i.student_id = s.id AND i.status <> 'Void'
+            LEFT JOIN academic_semesters sem ON sem.id = i.semester_id
+            LEFT JOIN invoice_lines il ON il.invoice_id = i.id
+            WHERE s.id = %s
+            GROUP BY s.id, s.student_no, s.first_name, s.last_name, s.status,
+                     p.name, f.name, i.id, i.invoice_no, i.issued_on, i.due_on,
+                     sem.academic_year, sem.semester_number, il.currency
+            ORDER BY sem.academic_year DESC, sem.semester_number DESC, il.currency
+            """,
+            (actor["student_id"],),
+        ).fetchall()
+        return {"student": {
+            "student_number": rows[0]["student_no"] if rows else None,
+            "first_name": rows[0]["first_name"] if rows else None,
+            "last_name": rows[0]["last_name"] if rows else None,
+            "programme": rows[0]["programme"] if rows else None,
+            "faculty": rows[0]["faculty"] if rows else None,
+            "status": rows[0]["status"] if rows else None,
+        }, "accounts": [
+            dict(row) | {"outstanding_cents": max(0, int(row["billed_cents"] or 0) - int(row["paid_cents"] or 0))}
+            for row in rows
+        ]}
+
     return {"error": "That data tool is not available."}
 
 
@@ -214,6 +265,8 @@ def ask_assistant(question: str, actor: dict[str, Any], conn: Any) -> str:
     client = genai.Client(api_key=api_key)
     allowed = []
     role = actor.get("role")
+    if role == "student":
+        allowed.append(STUDENT_TOOLS[0])
     if role in FINANCE_ROLES:
         allowed.append(EMPLOYEE_TOOLS[0])
     if role in STUDENT_RECORD_ROLES or role == "demo":
@@ -274,6 +327,8 @@ def ask_assistant(question: str, actor: dict[str, Any], conn: Any) -> str:
 def assistant_capabilities(actor: dict[str, Any]) -> list[str]:
     role = actor.get("role")
     capabilities = ["Answer general questions about this student accounts demo."]
+    if role == "student":
+        return capabilities + ["Explain your own student profile, invoices, payment history and outstanding balances."]
     if role in FINANCE_ROLES:
         capabilities += ["Summarise invoices, payments and outstanding balances by currency.",
                           "Look up an individual student account by student number."]
