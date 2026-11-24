@@ -256,7 +256,12 @@ def get_db():
 
 @app.before_request
 def open_student_portal_database():
-    if request.blueprint == "student_portal":
+    database_endpoints = {
+        "student_portal.student_dashboard",
+        "student_portal.student_assistant",
+        "student_portal.student_assistant_chat",
+    }
+    if request.endpoint in database_endpoints:
         get_db()
 
 
