@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My AI assistant · Student Accounts</title><link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"></head>
+<body class="student-portal-body"><div class="student-portal-shell">
+<header class="student-topbar"><a class="student-brand" href="{{ url_for('student_portal.student_dashboard') }}">Student Accounts <span>· Student Portal</span></a><form method="post" action="{{ url_for('student_portal.student_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="student-signout" type="submit">Sign out</button></form></header>
+<main class="student-dashboard">
+<section class="student-welcome"><div><p class="student-eyebrow">GEMINI · READ-ONLY MODE</p><h1>My AI Assistant</h1><p>Ask about your own student profile, invoices, payments and balances.</p></div><a class="student-signout" href="{{ url_for('student_portal.student_dashboard') }}">Back to dashboard</a></section>
+<section class="assistant-layout student-data-card">
+<div class="assistant-intro"><div class="assistant-mark">✦</div><div><h2>How can I help?</h2><p>The assistant can only retrieve information linked to your verified student account. It cannot change records or make payments.</p></div></div>
+<div class="assistant-prompts"><button type="button" class="assistant-prompt" data-prompt="Summarise my current outstanding balances by currency.">My outstanding balances</button><button type="button" class="assistant-prompt" data-prompt="Summarise my recent invoices and due dates.">My invoices and due dates</button><button type="button" class="assistant-prompt" data-prompt="Explain my payment history.">My payment history</button></div>
+<div id="assistant-messages" class="assistant-messages" role="log" aria-live="polite"><div class="assistant-message assistant-message-bot"><strong>NUST AI Assistant</strong><p>I can help explain your own student account information. I cannot look up another student's records.</p></div></div>
+<form id="assistant-form" class="assistant-compose" data-endpoint="/api/student/assistant/chat"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label class="sr-only" for="assistant-question">Your question</label><textarea id="assistant-question" name="question" rows="2" maxlength="2000" placeholder="Ask about your account…" required></textarea><button class="button primary" type="submit">Send ↗</button></form>
+<p id="assistant-status" class="assistant-status" role="status">Read-only access. Check important financial information against your source records.</p>
+</section>
+</main><footer class="student-disclaimer">Independent academic project · Illustrative records only · Not an official NUST system</footer>
+</div><script src="{{ url_for('static', filename='assistant.js') }}" defer></script></body></html>
