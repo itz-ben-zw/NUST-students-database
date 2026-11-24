@@ -232,6 +232,16 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
             """,
             (actor["student_id"],),
         ).fetchall()
+        payments = conn.execute(
+            """
+            SELECT receipt_no, paid_on, amount_cents, currency, method
+            FROM payments
+            WHERE student_id = %s
+            ORDER BY paid_on DESC, id DESC
+            LIMIT 10
+            """,
+            (actor["student_id"],),
+        ).fetchall()
         return {"student": {
             "student_number": rows[0]["student_no"] if rows else None,
             "first_name": rows[0]["first_name"] if rows else None,
@@ -241,8 +251,8 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
             "status": rows[0]["status"] if rows else None,
         }, "accounts": [
             dict(row) | {"outstanding_cents": max(0, int(row["billed_cents"] or 0) - int(row["paid_cents"] or 0))}
-            for row in rows
-        ]}
+            for row in rows if row["invoice_no"] is not None
+        ], "recent_payments": [dict(row) for row in payments]}
 
     return {"error": "That data tool is not available."}
 
