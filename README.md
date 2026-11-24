@@ -153,4 +153,4 @@ VALUES (
 
 Replace the example values with verified identifiers. Do not expose service-role credentials or grant students direct access to either session table or the identity-link table. If a link is incorrect, an administrator must correct it before the student signs in.
 
-Student login uses Supabase Auth password authentication. Student Google OAuth, self-service registration, administrator linking UI, and student access to Gemini are not enabled in this milestone. Employee login and employee dashboard permissions remain separate.
+Student login uses Supabase Auth password authentication. Student Google OAuth, self-service registration, and an administrator linking UI are not enabled in this milestone. The student-facing Gemini assistant is enabled in read-only mode and can query only the student ID resolved from the verified session. Employee login and employee dashboard permissions remain separate.
