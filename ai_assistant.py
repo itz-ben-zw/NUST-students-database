@@ -95,7 +95,7 @@ def _tool_result(conn: Any, name: str, args: dict[str, Any], actor: dict[str, An
               AND (%s = false OR s.student_no ~ '^N0')
               AND i.status <> 'Void'
             GROUP BY lt.currency ORDER BY lt.currency
-            """
+            """,
             (academic_year, academic_year, demo_scope),
         ).fetchall()
         result = []
