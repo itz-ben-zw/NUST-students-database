@@ -52,7 +52,7 @@ EMPLOYEE_TOOLS = [
             "required": ["student_number"],
         },
     },
-        {
+    {
         "name": "get_student_count",
         "description": "Count student records visible to the current employee role. Only use for student-records-authorized employee roles.",
         "parameters": {
