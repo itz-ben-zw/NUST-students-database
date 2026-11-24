@@ -34,7 +34,8 @@
     submit.disabled = true;
     status.textContent = "Checking authorised records and preparing an answer…";
     try {
-      const response = await fetch("/api/assistant/chat", {
+      const endpoint = form.dataset.endpoint || "/api/assistant/chat";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
