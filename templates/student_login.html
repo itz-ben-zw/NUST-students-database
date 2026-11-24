@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Student sign in · Student Accounts</title><link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"></head>
+<body class="student-portal-body"><main class="student-auth-wrap">
+  <a class="student-brand" href="{{ url_for('public_preview') }}">Student Accounts <span>· Student Portal</span></a>
+  <section class="student-auth-card">
+    <p class="student-eyebrow">STUDENT ACCESS</p><h1>Welcome back.</h1>
+    <p class="student-muted">Sign in to view your own student profile, invoices and payment history.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="student-flashes">{% for category,message in messages %}<p class="student-flash {{ category }}">{{ message }}</p>{% endfor %}</div>{% endif %}{% endwith %}
+    <form method="post" class="student-login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Email address<input type="email" name="email" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <button type="submit">Sign in to student portal</button>
+    </form>
+    <p class="student-auth-foot">Student access must be linked and approved by an administrator. <a href="{{ url_for('login') }}">Employee sign in</a></p>
+  </section>
+  <p class="student-disclaimer">Independent academic demonstration · Fictional sample data · Not an official NUST system</p>
+</main></body></html>

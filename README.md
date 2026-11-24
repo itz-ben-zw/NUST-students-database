@@ -96,3 +96,61 @@ Set these environment variables in Render's private Environment settings:
 | `DATABASE_URL` | Supabase PostgreSQL connection string with `sslmode=require` or stronger |
 
 Never place the service-role key or database connection string in browser code, GitHub, or chat. The public `/preview` page is viewable before database credentials are configured; employee sign-in and database-backed pages require all private variables and an authorised employee profile.
+
+## AI Assistant v1 (in development)
+
+The AI Assistant uses the Google Gemini API through the official `google-genai`
+Python SDK. It is a read-only feature: Gemini may request only server-defined,
+parameterized SELECT tools. The application does not accept SQL from the model,
+does not expose database credentials to the browser, and runs each assistant
+request in a read-only PostgreSQL transaction.
+
+Configure `GEMINI_API_KEY` as a private server environment variable. Optionally
+set `GEMINI_MODEL`; the default is `gemini-3.8-flash`. Never commit the key or
+place it in frontend JavaScript.
+
+Current employee access follows the existing employee role model. Finance
+summaries are limited to finance-authorized roles; student searches are limited
+to student-records-authorized roles. Demo access remains scoped to DEMO-prefixed
+student numbers.
+
+**Student self-service is not enabled yet.** The current application has no
+student sign-in or verified link between a Supabase Auth user and a student
+record. A migration is included as identity-linking groundwork, but it must be
+reviewed and applied only with an approved student identity onboarding process.
+Do not infer identity from a typed student number or an email address supplied
+in chat. Until that workflow is implemented, student access to the AI assistant
+must remain disabled.
+
+The project contains fictional academic demonstration records and is not an
+official NUST system. Do not enter real student, identity, or payment data.
+
+
+## Student portal (feature branch)
+
+The student portal is a separate sign-in surface at `/student/login`. A successful sign-in requires all three conditions:
+
+1. The person authenticates with Supabase Auth using their own email and password.
+2. The authenticated Supabase UUID already exists in `public.student_auth_links`.
+3. The link points to exactly one existing student record.
+
+Students cannot self-link by entering a student number, email address, or other personal detail. The Flask server resolves the student ID from the verified Auth UUID and uses that server-side ID for every dashboard query. The dashboard currently shows the linked student's profile, invoices, balances, and recent payments. It does not expose employee reports, other student records, or payment-management actions.
+
+### Enabling a student account
+
+Apply the new migration `supabase/migrations/20261124000000_student_auth_links.sql` only after reviewing it in the Supabase SQL editor. It creates the server-managed identity mapping and opaque student web-session table. It has not been applied automatically by this repository workflow.
+
+A system administrator must first create or invite the student's Supabase Auth account through a verified process, confirm the student's identity against the institution's authoritative records, and then insert the mapping using the Auth user's UUID and the existing student row's database ID. Example SQL for an administrator after verification:
+
+```sql
+INSERT INTO public.student_auth_links (auth_user_id, student_id, linked_by)
+VALUES (
+  'AUTH-USER-UUID-VERIFIED-BY-ADMIN',
+  12345,
+  'ADMIN-AUTH-USER-UUID'
+);
+```
+
+Replace the example values with verified identifiers. Do not expose service-role credentials or grant students direct access to either session table or the identity-link table. If a link is incorrect, an administrator must correct it before the student signs in.
+
+Student login uses Supabase Auth password authentication. Student Google OAuth, self-service registration, and an administrator linking UI are not enabled in this milestone. The student-facing Gemini assistant is enabled in read-only mode and can query only the student ID resolved from the verified session. Employee login and employee dashboard permissions remain separate.

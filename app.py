@@ -14,11 +14,14 @@ import requests
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 from flask_wtf.csrf import CSRFProtect
 
+from ai_assistant import ask_assistant, assistant_capabilities, AssistantConfigurationError
+
 from security import (AuthenticationUnavailable, create_web_session, current_employee,
                       delete_web_session, invite_employee, list_employee_profiles, set_employee_active, set_employee_role,
                       login_required, roles_required, sign_in_with_password,
                       create_google_pkce_pair, google_authorize_url, exchange_google_code,
                       get_authenticated_user, get_employee_profile, ensure_initial_admin_profile)
+from student_portal import student_portal
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 app = Flask(__name__)
@@ -54,7 +57,8 @@ def healthz():
 
 @app.context_processor
 def inject_employee():
-    return {"current_employee": current_employee()}
+    from security import current_student
+    return {"current_employee": current_employee(), "current_student": current_student()}
 
 @app.get("/preview")
 def public_preview():
@@ -249,6 +253,16 @@ def get_db():
     if "db" not in g:
         g.db = connect_db()
     return g.db
+
+@app.before_request
+def open_student_portal_database():
+    database_endpoints = {
+        "student_portal.student_dashboard",
+        "student_portal.student_assistant",
+        "student_portal.student_assistant_chat",
+    }
+    if request.endpoint in database_endpoints:
+        get_db()
 
 
 @app.teardown_appcontext
@@ -612,6 +626,59 @@ def receipt_page(receipt_no):
     if row is None:
         abort(404)
     return render_template("receipt.html", receipt=row)
+
+
+@app.get("/assistant")
+@login_required
+def ai_assistant_page():
+    actor = current_employee()
+    if actor.get("role") == "payments_clerk":
+        abort(403)
+    return render_template("assistant.html", capabilities=assistant_capabilities(actor))
+
+
+@app.post("/api/assistant/chat")
+@login_required
+def ai_assistant_chat():
+    actor = current_employee()
+    if actor.get("role") == "payments_clerk":
+        abort(403)
+    payload = request.get_json(silent=True) or {}
+    question = payload.get("question", "")
+    if not isinstance(question, str):
+        return {"error": "Question must be text."}, 400
+    try:
+        # A read-only transaction is a second guardrail. Gemini never receives
+        # a database connection and can invoke only fixed SELECT tools.
+        db = get_db()
+        db.execute("SET TRANSACTION READ ONLY")
+        answer = ask_assistant(question, actor, db)
+        db.rollback()
+        return {"answer": answer}, 200
+    except ValueError as exc:
+        db = g.get("db")
+        if db is not None:
+            db.rollback()
+        return {"error": str(exc)}, 400
+    except PermissionError as exc:
+        db = g.get("db")
+        if db is not None:
+            db.rollback()
+        return {"error": str(exc)}, 403
+    except AssistantConfigurationError as exc:
+        db = g.get("db")
+        if db is not None:
+            db.rollback()
+        return {"error": str(exc)}, 503
+    except Exception:
+        db = g.get("db")
+        if db is not None:
+            db.rollback()
+        app.logger.exception("AI assistant request failed.")
+        return {"error": "The assistant is temporarily unavailable. Please try again."}, 502
+
+
+app.register_blueprint(student_portal)
 
 
 if __name__ == "__main__":
