@@ -14,6 +14,9 @@ class FakeConnection:
     def fetchall(self):
         return self.rows
 
+    def fetchone(self):
+        return {"student_count": 12}
+
 
 def test_finance_tool_denies_student_role_without_query():
     conn = FakeConnection()
@@ -48,5 +51,20 @@ def test_demo_search_is_scoped_to_demo_student_numbers():
 def test_unknown_tool_is_rejected():
     conn = FakeConnection()
     result = _tool_result(conn, "run_sql", {"sql": "DROP TABLE students"}, {"role": "system_admin"})
+    assert "error" in result
+    assert conn.calls == []
+
+
+def test_demo_student_count_is_scoped_to_demo_records():
+    conn = FakeConnection()
+    result = _tool_result(conn, "get_student_count", {}, {"role": "demo"})
+    assert result == {"student_count": 12}
+    assert "student_no ~ '^N0'" in conn.calls[0][0]
+    assert conn.calls[0][1] == (True,)
+
+
+def test_finance_role_cannot_get_student_count():
+    conn = FakeConnection()
+    result = _tool_result(conn, "get_student_count", {}, {"role": "finance"})
     assert "error" in result
     assert conn.calls == []
