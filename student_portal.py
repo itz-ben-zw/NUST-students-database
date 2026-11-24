@@ -56,9 +56,11 @@ def student_logout():
 @student_portal.get("/student/dashboard")
 @student_login_required
 def student_dashboard():
+    from app import get_db
+    db = get_db()
     student = current_student()
     student_id = student["student_id"]
-    profile = g.db.execute(
+    profile = db.execute(
         """
         SELECT s.id, s.student_no, s.first_name, s.last_name, s.status,
                p.name AS programme_name, p.award_level,
@@ -73,7 +75,7 @@ def student_dashboard():
     if not profile:
         abort(404)
 
-    invoices = g.db.execute(
+    invoices = db.execute(
         """
         SELECT i.id, i.invoice_no, i.issued_on, i.due_on, i.status,
                a.academic_year, a.semester_number, il.currency,
@@ -99,7 +101,7 @@ def student_dashboard():
         for row in invoices
     ]
 
-    payments = g.db.execute(
+    payments = db.execute(
         """
         SELECT p.receipt_no, p.paid_on, p.amount_cents, p.currency, p.method,
                COALESCE(string_agg(DISTINCT i.invoice_no, ', '), '') AS invoices
