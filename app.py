@@ -254,6 +254,11 @@ def get_db():
         g.db = connect_db()
     return g.db
 
+@app.before_request
+def open_student_portal_database():
+    if request.blueprint == "student_portal":
+        get_db()
+
 
 @app.teardown_appcontext
 def close_db(_error=None):
