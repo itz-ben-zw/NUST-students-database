@@ -14,7 +14,9 @@ import requests
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 from flask_wtf.csrf import CSRFProtect
 
-from ai_assistant import ask_assistant, assistant_capabilities, AssistantConfigurationError\n\nfrom security import (AuthenticationUnavailable, create_web_session, current_employee,
+from ai_assistant import ask_assistant, assistant_capabilities, AssistantConfigurationError
+
+from security import (AuthenticationUnavailable, create_web_session, current_employee,
                       delete_web_session, invite_employee, list_employee_profiles, set_employee_active, set_employee_role,
                       login_required, roles_required, sign_in_with_password,
                       create_google_pkce_pair, google_authorize_url, exchange_google_code,
