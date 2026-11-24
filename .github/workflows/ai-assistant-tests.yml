@@ -23,4 +23,4 @@ jobs:
       - name: Compile application modules
         run: python -m compileall -q app.py security.py ai_assistant.py student_portal.py
       - name: Run assistant authorization tests
-        run: pytest -q tests/test_ai_assistant.py
+        run: pytest -q tests
