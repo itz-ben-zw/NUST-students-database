@@ -189,7 +189,7 @@ def ask_assistant(question: str, actor: dict[str, Any], conn: Any) -> str:
     except ImportError as exc:
         raise AssistantConfigurationError("The Gemini SDK is not installed. Deploy the updated requirements.") from exc
 
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
     client = genai.Client(api_key=api_key)
     allowed = []
     role = actor.get("role")
