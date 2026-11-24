@@ -106,7 +106,7 @@ does not expose database credentials to the browser, and runs each assistant
 request in a read-only PostgreSQL transaction.
 
 Configure `GEMINI_API_KEY` as a private server environment variable. Optionally
-set `GEMINI_MODEL`; the default is `gemini-2.5-flash`. Never commit the key or
+set `GEMINI_MODEL`; the default is `gemini-3.8-flash`. Never commit the key or
 place it in frontend JavaScript.
 
 Current employee access follows the existing employee role model. Finance
